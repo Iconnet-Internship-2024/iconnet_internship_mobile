@@ -70,7 +70,7 @@ class _HeaderPartsState extends State<HeaderParts> {
                         fontWeight:
                             indexCategory == index ? FontWeight.bold : null,
                       ),
-                    ),
+                    )
                   ),
                 ),
               );
