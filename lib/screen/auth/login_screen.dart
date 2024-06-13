@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
-import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart'; // Import RegisterPage
+import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart'; 
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -31,7 +31,7 @@ class LoginPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const RegisterPage(), // Navigate to RegisterPage
+                      builder: (context) => const RegisterPage(),
                     ),
                   );
                 },
@@ -62,11 +62,11 @@ class LoginPage extends StatelessWidget {
                     topRight: Radius.circular(60),
                   ),
                 ),
-                child: const InputWrapper(), // Use InputWrapper widget here
+                child: const InputWrapper(), 
               ),
               Container(
                 width: double.infinity,
-                color: const Color(0xFF625A5A), // Warna latar belakang abu-abu
+                color: const Color(0xFF625A5A), 
                 padding: const EdgeInsets.all(10),
                 child: const Text(
                   "Copyright 2024 - PLN Icon Plus",
@@ -96,16 +96,16 @@ class LogoAndText extends StatelessWidget {
         Container(
           margin: const EdgeInsets.only(top: 20),
           child: Image.asset(
-            'asset/logo_pln_icon_plus.jpeg', // Ganti dengan path/logo yang sesuai
-            width: 150, // Sesuaikan ukuran logo
-            height: 150, // Sesuaikan ukuran logo
+            'asset/logo_pln_icon_plus.jpeg', 
+            width: 150, 
+            height: 150, 
           ),
         ),
         const Positioned(
           bottom: 0,
           child: Text(
             "Internship",
-            style: TextStyle(color: Colors.black, fontSize: 24), // Sesuaikan ukuran teks
+            style: TextStyle(color: Colors.black, fontSize: 24), 
           ),
         ),
       ],
@@ -149,10 +149,10 @@ class InputWrapper extends StatelessWidget {
       padding: const EdgeInsets.all(30.0),
       child: Column(
         children: <Widget>[
-          const LogoAndText(), // Include LogoAndText widget here
-          const SizedBox(height: 80), // Menambahkan jarak yang agak jauh di sini
+          const LogoAndText(), 
+          const SizedBox(height: 80),
           _buildInputField("Email"),
-          const SizedBox(height: 20), // Sesuaikan jarak dengan widget di sekitarnya
+          const SizedBox(height: 20),
           _buildPasswordField("Password"),
           const SizedBox(height: 20),
           const Text(
@@ -172,7 +172,7 @@ class InputWrapper extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                // Tambahkan aksi yang dijalankan saat tombol ditekan
+                
               },
               child: const Text(
                 "Sign In",
@@ -230,7 +230,7 @@ class InputWrapper extends StatelessWidget {
         border: Border.all(color: Colors.black),
       ),
       child: TextField(
-        obscureText: true, // Teks tersembunyi (berbentuk titik atau bintang)
+        obscureText: true, 
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.grey),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
-import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart'; // Import LoginPage
+import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart'; 
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -31,7 +31,7 @@ class RegisterPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LoginPage(), // Navigate to LoginPage
+                      builder: (context) => const LoginPage(), 
                     ),
                   );
                 },
@@ -69,7 +69,7 @@ class RegisterPage extends StatelessWidget {
               ),
               Container(
                 width: double.infinity,
-                color: const Color(0xFF625A5A), // Warna latar belakang abu-abu
+                color: const Color(0xFF625A5A), 
                 padding: const EdgeInsets.all(10),
                 child: const Text(
                   "Copyright 2024 - PLN Icon Plus",
@@ -96,7 +96,7 @@ class RegisterHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, // Center align the text
+        crossAxisAlignment: CrossAxisAlignment.center, 
         children: const <Widget>[
           Text(
             "Sign Up",
@@ -126,16 +126,16 @@ class LogoAndText extends StatelessWidget {
         Container(
           margin: const EdgeInsets.only(top: 20),
           child: Image.asset(
-            'asset/logo_pln_icon_plus.jpeg', // Ganti dengan path/logo yang sesuai
-            width: 150, // Sesuaikan ukuran logo
-            height: 150, // Sesuaikan ukuran logo
+            'asset/logo_pln_icon_plus.jpeg', 
+            width: 150,
+            height: 150, 
           ),
         ),
         const Positioned(
           bottom: 0,
           child: Text(
             "Internship",
-            style: TextStyle(color: Colors.black, fontSize: 24), // Sesuaikan ukuran teks
+            style: TextStyle(color: Colors.black, fontSize: 24), 
           ),
         ),
       ],
@@ -152,7 +152,7 @@ class RegisterInputWrapper extends StatelessWidget {
       padding: const EdgeInsets.all(30.0),
       child: Column(
         children: <Widget>[
-          const LogoAndText(), // Include LogoAndText widget here
+          const LogoAndText(), 
           const SizedBox(height: 80),
           _buildInputField("Username"),
           const SizedBox(height: 20),
@@ -163,18 +163,18 @@ class RegisterInputWrapper extends StatelessWidget {
           _buildPasswordField("Confirm Password"),
           const SizedBox(height: 30),
           Container(
-            width: 150, // Ubah lebar sesuai kebutuhan
-            height: 40, // Ubah tinggi sesuai kebutuhan
+            width: 150, 
+            height: 40, 
             margin: const EdgeInsets.all(10),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black, // Ubah warna latar belakang tombol
+                backgroundColor: Colors.black, 
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               onPressed: () {
-                // Tambahkan aksi yang dijalankan saat tombol ditekan
+              
               },
               child: const Text(
                 "Register",
@@ -205,7 +205,7 @@ class RegisterInputWrapper extends StatelessWidget {
             offset: Offset(0, 10),
           ),
         ],
-        border: Border.all(color: Colors.black), // Black border
+        border: Border.all(color: Colors.black), 
       ),
       child: TextField(
         decoration: InputDecoration(
@@ -230,10 +230,10 @@ class RegisterInputWrapper extends StatelessWidget {
             offset: Offset(0, 10),
           ),
         ],
-        border: Border.all(color: Colors.black), // Black border
+        border: Border.all(color: Colors.black), 
       ),
       child: TextField(
-        obscureText: true, // Teks tersembunyi (berbentuk titik atau bintang)
+        obscureText: true, 
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.grey),

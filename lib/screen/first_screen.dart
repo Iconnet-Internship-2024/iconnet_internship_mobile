@@ -27,7 +27,7 @@ class FirstScreen extends StatelessWidget {
                   right: 0,
                   child: Container(
                     height: 200,
-                    color: Colors.red.withOpacity(0.5), // Warna merah pudar
+                    color: Colors.red.withOpacity(0.5), 
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Center(
@@ -145,7 +145,7 @@ class FirstScreen extends StatelessWidget {
                     margin: const EdgeInsets.all(10),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black, // Warna latar belakang tombol
+                        backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -173,7 +173,7 @@ class FirstScreen extends StatelessWidget {
             ),
             Container(
               width: double.infinity,
-              color: const Color(0xFF625A5A), // Warna latar belakang abu-abu
+              color: const Color(0xFF625A5A), 
               padding: const EdgeInsets.all(10),
               child: const Text(
                 "Copyright 2024 - PLN Icon Plus",
@@ -192,30 +192,30 @@ class FirstScreen extends StatelessWidget {
 
 Widget _buildCard({required BuildContext context, required IconData icon, required String title, required String description}) {
   return SizedBox(
-    height: 165,// Tetapkan tinggi yang tetap untuk setiap card
+    height: 165,
     child: Container(
       width: MediaQuery.of(context).size.width * 0.4,
       margin: const EdgeInsets.symmetric(vertical: 5),
       child: Card(
-        elevation: 0, // Menghilangkan bayangan Card
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: BorderSide(color: Color(0xFFCB1919)), // Warna tepi Card
+          side: BorderSide(color: Color(0xFFCB1919)), 
         ),
         child: Column(
           children: [
             Container(
-              width: double.infinity, // Menyamakan lebar ikon dengan card
-              color: Colors.white, // Warna latar belakang untuk ikon
+              width: double.infinity, 
+              color: Colors.white,
               padding: const EdgeInsets.all(8),
-              child: Icon(icon, size: 30, color: Color(0xFFCB1919)), // Warna ikon
+              child: Icon(icon, size: 30, color: Color(0xFFCB1919)), 
             ),
             Container(
-              height: 100, // Tetapkan tinggi yang tetap untuk bagian judul dan deskripsi
+              height: 100,
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: Color(0xFFCB1919), // Warna latar belakang untuk judul dan deskripsi
+                color: Color(0xFFCB1919), 
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -225,7 +225,7 @@ Widget _buildCard({required BuildContext context, required IconData icon, requir
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white, // Warna teks judul
+                      color: Colors.white, 
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -234,7 +234,7 @@ Widget _buildCard({required BuildContext context, required IconData icon, requir
                     description,
                     style: const TextStyle(
                       fontSize: 10,
-                      color: Colors.white, // Warna teks deskripsi
+                      color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
