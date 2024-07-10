@@ -1,138 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
-import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart'; 
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            colors: [
-              primaryColors,
-              primaryColors.withOpacity(0.9),
-              primaryColors.withOpacity(0.8),
-            ],
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              const SizedBox(height: 40),
-              const Header(),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RegisterPage(),
-                    ),
-                  );
-                },
-                child: const Text.rich(
-                  TextSpan(
-                    text: "Haven’t account? ",
-                    style: TextStyle(color: Colors.white),
+      backgroundColor: Colors.white,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(height: 100),
+                  Stack(
+                    alignment: Alignment.center,
                     children: [
-                      TextSpan(
-                        text: "Sign up!",
-                        style: TextStyle(
-                          color: Colors.white,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Colors.white,
+                      Image.asset(
+                        'asset/logo_pln_icon_plus.jpeg',
+                        width: 150,
+                        height: 150,
+                      ),
+                      const Positioned(
+                        bottom: 0,
+                        child: Text(
+                          "Internship",
+                          style: TextStyle(color: Colors.black, fontSize: 24),
                         ),
                       ),
                     ],
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                    topRight: Radius.circular(60),
+                  const SizedBox(height: 20),
+                  const InputWrapper(), 
+                  const SizedBox(height: 10),
+                  Container(
+                    margin: const EdgeInsets.only(top: 10),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterPage(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Haven't account? Sign up!",
+                        style: TextStyle(
+                          color: Colors.black,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.black,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                child: const InputWrapper(), 
-              ),
-              Container(
-                width: double.infinity,
-                color: const Color(0xFF625A5A), 
-                padding: const EdgeInsets.all(10),
-                child: const Text(
-                  "Copyright 2024 - PLN Icon Plus",
-                  style: TextStyle(
-                    fontSize: 5,
-                    color: Colors.white,
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Forgot Password?",
+                    style: TextStyle(color: Colors.black, decoration: TextDecoration.underline),
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  const SizedBox(height: 100),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class LogoAndText extends StatelessWidget {
-  const LogoAndText({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 20),
-          child: Image.asset(
-            'asset/logo_pln_icon_plus.jpeg', 
-            width: 150, 
-            height: 150, 
-          ),
-        ),
-        const Positioned(
-          bottom: 0,
-          child: Text(
-            "Internship",
-            style: TextStyle(color: Colors.black, fontSize: 24), 
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class Header extends StatelessWidget {
-  const Header({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: const <Widget>[
-          Text(
-            "Welcome",
-            style: TextStyle(color: Colors.white, fontSize: 40),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 10),
-          Text(
-            "Sign in to start",
-            style: TextStyle(color: Colors.white, fontSize: 18),
-            textAlign: TextAlign.center,
+          Container(
+            color: primaryColors,
+            height: 50,
           ),
         ],
       ),
@@ -149,16 +88,10 @@ class InputWrapper extends StatelessWidget {
       padding: const EdgeInsets.all(30.0),
       child: Column(
         children: <Widget>[
-          const LogoAndText(), 
-          const SizedBox(height: 80),
+          SizedBox(height: 80), // Adjusted size to match the layout
           _buildInputField("Email"),
           const SizedBox(height: 20),
           _buildPasswordField("Password"),
-          const SizedBox(height: 20),
-          const Text(
-            "Forgot Password?",
-            style: TextStyle(color: Colors.grey),
-          ),
           const SizedBox(height: 20),
           Container(
             width: 150,
@@ -172,7 +105,7 @@ class InputWrapper extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                
+                // Add functionality for login button here
               },
               child: const Text(
                 "Sign In",
@@ -230,7 +163,7 @@ class InputWrapper extends StatelessWidget {
         border: Border.all(color: Colors.black),
       ),
       child: TextField(
-        obscureText: true, 
+        obscureText: true,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.grey),

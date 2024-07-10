@@ -1,113 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
-import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart'; 
+import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart';
 
 class RegisterPage extends StatelessWidget {
-  const RegisterPage({super.key});
-  
+  const RegisterPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            colors: [
-              primaryColors,
-              primaryColors.withOpacity(0.9),
-              primaryColors.withOpacity(0.8),
-            ],
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              const SizedBox(height: 80),
-              const RegisterHeader(),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginPage(), 
-                    ),
-                  );
-                },
-                child: const Text.rich(
-                  TextSpan(
-                    text: "Have account? ",
-                    style: TextStyle(color: Colors.white),
-                    children: [
-                      TextSpan(
-                        text: "Sign in here",
-                        style: TextStyle(
-                          color: Colors.white,
-                          decoration: TextDecoration.underline, 
-                          decorationColor: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+      backgroundColor: Colors.white,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(height: 100),
+                  const LogoAndText(),
+                  const SizedBox(height: 20),
+                  const InputWrapper(),
+                  const SizedBox(height: 100),
+                ],
               ),
-              const SizedBox(height: 20),
-              Container(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.of(context).size.height - 180,
-                ),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                    topRight: Radius.circular(60),
-                  ),
-                ),
-                child: const RegisterInputWrapper(),
-              ),
-              Container(
-                width: double.infinity,
-                color: const Color(0xFF625A5A), 
-                padding: const EdgeInsets.all(10),
-                child: const Text(
-                  "Copyright 2024 - PLN Icon Plus",
-                  style: TextStyle(
-                    fontSize: 5,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class RegisterHeader extends StatelessWidget {
-  const RegisterHeader({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, 
-        children: const <Widget>[
-          Text(
-            "Sign Up",
-            style: TextStyle(color: Colors.white, fontSize: 40),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 10),
-          Text(
-            "Sign up to start",
-            style: TextStyle(color: Colors.white, fontSize: 18),
-            textAlign: TextAlign.center,
+          Container(
+            color: primaryColors,
+            height: 50,
           ),
         ],
       ),
@@ -115,36 +36,8 @@ class RegisterHeader extends StatelessWidget {
   }
 }
 
-class LogoAndText extends StatelessWidget {
-  const LogoAndText({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 20),
-          child: Image.asset(
-            'asset/logo_pln_icon_plus.jpeg', 
-            width: 150,
-            height: 150, 
-          ),
-        ),
-        const Positioned(
-          bottom: 0,
-          child: Text(
-            "Internship",
-            style: TextStyle(color: Colors.black, fontSize: 24), 
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class RegisterInputWrapper extends StatelessWidget {
-  const RegisterInputWrapper({Key? key}) : super(key: key);
+class InputWrapper extends StatelessWidget {
+  const InputWrapper({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -152,8 +45,7 @@ class RegisterInputWrapper extends StatelessWidget {
       padding: const EdgeInsets.all(30.0),
       child: Column(
         children: <Widget>[
-          const LogoAndText(), 
-          const SizedBox(height: 80),
+          SizedBox(height: 80),
           _buildInputField("Username"),
           const SizedBox(height: 20),
           _buildInputField("Email"),
@@ -163,18 +55,18 @@ class RegisterInputWrapper extends StatelessWidget {
           _buildPasswordField("Confirm Password"),
           const SizedBox(height: 30),
           Container(
-            width: 150, 
-            height: 40, 
+            width: 150,
+            height: 40,
             margin: const EdgeInsets.all(10),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black, 
+                backgroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               onPressed: () {
-              
+                // Add functionality for registration button here
               },
               child: const Text(
                 "Register",
@@ -186,7 +78,6 @@ class RegisterInputWrapper extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20),
         ],
       ),
     );
@@ -205,7 +96,7 @@ class RegisterInputWrapper extends StatelessWidget {
             offset: Offset(0, 10),
           ),
         ],
-        border: Border.all(color: Colors.black), 
+        border: Border.all(color: Colors.black),
       ),
       child: TextField(
         decoration: InputDecoration(
@@ -230,16 +121,44 @@ class RegisterInputWrapper extends StatelessWidget {
             offset: Offset(0, 10),
           ),
         ],
-        border: Border.all(color: Colors.black), 
+        border: Border.all(color: Colors.black),
       ),
       child: TextField(
-        obscureText: true, 
+        obscureText: true,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.grey),
           border: InputBorder.none,
         ),
       ),
+    );
+  }
+}
+
+class LogoAndText extends StatelessWidget {
+  const LogoAndText({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 20),
+          child: Image.asset(
+            'asset/logo_pln_icon_plus.jpeg',
+            width: 150,
+            height: 150,
+          ),
+        ),
+        const Positioned(
+          bottom: 0,
+          child: Text(
+            "Internship",
+            style: TextStyle(color: Colors.black, fontSize: 24),
+          ),
+        ),
+      ],
     );
   }
 }
