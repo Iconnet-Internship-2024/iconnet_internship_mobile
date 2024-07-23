@@ -36,7 +36,7 @@ class LoginPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const InputWrapper(), 
+                  const InputWrapper(),
                   const SizedBox(height: 10),
                   Container(
                     margin: const EdgeInsets.only(top: 10),
@@ -49,12 +49,22 @@ class LoginPage extends StatelessWidget {
                           ),
                         );
                       },
-                      child: const Text(
-                        "Haven't account? Sign up!",
-                        style: TextStyle(
-                          color: Colors.black,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Colors.black,
+                      child: RichText(
+                        text: const TextSpan(
+                          text: "Haven't account? ",
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: 'Sign up!',
+                              style: TextStyle(
+                                color: Colors.black,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.black,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -68,10 +78,6 @@ class LoginPage extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-          Container(
-            color: primaryColors,
-            height: 50,
           ),
         ],
       ),
@@ -88,7 +94,7 @@ class InputWrapper extends StatelessWidget {
       padding: const EdgeInsets.all(30.0),
       child: Column(
         children: <Widget>[
-          SizedBox(height: 80), // Adjusted size to match the layout
+          const SizedBox(height: 80),
           _buildInputField("Email"),
           const SizedBox(height: 20),
           _buildPasswordField("Password"),
@@ -128,20 +134,16 @@ class InputWrapper extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(225, 95, 27, .3),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.black, width:2),
       ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey),
-          border: InputBorder.none,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust the padding as needed
+        child: TextField(
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Colors.grey),
+            border: InputBorder.none,
+          ),
         ),
       ),
     );
@@ -153,21 +155,17 @@ class InputWrapper extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(225, 95, 27, .3),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.black, width:2),
       ),
-      child: TextField(
-        obscureText: true,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey),
-          border: InputBorder.none,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust the padding as needed
+        child: TextField(
+          obscureText: true,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Colors.grey),
+            border: InputBorder.none,
+          ),
         ),
       ),
     );

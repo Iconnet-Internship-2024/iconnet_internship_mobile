@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
-import 'package:iconnet_internship_mobile/screen/home_page.dart'; 
+import 'package:iconnet_internship_mobile/screen/home_page.dart';
 
-class FAQPage extends StatefulWidget {
-  const FAQPage({Key? key}) : super(key: key);
+class SKPage extends StatefulWidget {
+  const SKPage({Key? key}) : super(key: key);
 
   @override
-  State<FAQPage> createState() => _FAQPageState();
+  State<SKPage> createState() => _SKPageState();
 }
 
-class _FAQPageState extends State<FAQPage> {
-  int _selectedIndex = 1; // Set selectedIndex to 1 for FAQ
+class _SKPageState extends State<SKPage> {
+  int _selectedIndex = 1; // Set selectedIndex to 1 for SK
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _onItemTapped(int index) {
@@ -58,13 +58,8 @@ class _FAQPageState extends State<FAQPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
                 child: const Text(
                   '1. Lakukan Registrasi jika anda belum memiliki akun\n'
                   '2. Kemudian lakukan login jika anda sudah memiliki akun\n'
@@ -72,9 +67,10 @@ class _FAQPageState extends State<FAQPage> {
                   '4. Lakukan pengajuan pendaftaran internship dengan memilih kategori yang sudah ditentukan, yaitu : mahasiswa ataupun siswa. Kemudian isi semua formulir dengan lengkap dan benar.\n'
                   '5. Setelah anda mengisi data diri dan form pengajuan internship, maka anda harus menunggu proses pengajuan dan anda akan mendapatkan status balasan maksimal 14 hari setelah pengajuan dilakukan.',
                   style: TextStyle(fontSize: 16),
+                  textAlign: TextAlign.justify,
                 ),
               ),
-              const SizedBox(height: 20),
+              const Divider(color: Colors.grey, height: 40, thickness:2),
               const Text(
                 'Syarat dan Ketentuan Pendaftaran Program Internship!',
                 style: TextStyle(
@@ -82,13 +78,8 @@ class _FAQPageState extends State<FAQPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
                 child: const Text(
                   '1. xxxxxxx\n'
                   '2. xxxxxxx\n'
@@ -99,6 +90,7 @@ class _FAQPageState extends State<FAQPage> {
                   '7. xxxxxxx\n'
                   '8. xxxxxxx\n',
                   style: TextStyle(fontSize: 16),
+                  textAlign: TextAlign.justify,
                 ),
               ),
             ],

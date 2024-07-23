@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/screen/home_page.dart'; 
-import 'package:iconnet_internship_mobile/screen/faq_page.dart'; 
+import 'package:iconnet_internship_mobile/screen/SK_page.dart'; 
 
 class Navbar extends StatefulWidget {
   final int selectedIndex;
@@ -49,7 +49,7 @@ class _NavbarState extends State<Navbar> {
                   ),
                   _buildNavItem(
                     icon: Icons.question_answer,
-                    text: 'FAQ',
+                    text: 'Syarat & Ketentuan',
                     index: 1,
                     context: context, // Pass the context
                   ),
@@ -89,7 +89,7 @@ class _NavbarState extends State<Navbar> {
           // Navigate to FAQ page
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => FAQPage()), // Ganti dengan halaman FAQ Anda
+            MaterialPageRoute(builder: (context) => SKPage()), // Ganti dengan halaman FAQ Anda
           );
         } else if (index == 2) {
           // Navigate to Profile page

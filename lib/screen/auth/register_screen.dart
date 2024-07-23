@@ -26,10 +26,6 @@ class RegisterPage extends StatelessWidget {
               ),
             ),
           ),
-          Container(
-            color: primaryColors,
-            height: 50,
-          ),
         ],
       ),
     );
@@ -89,14 +85,7 @@ class InputWrapper extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(225, 95, 27, .3),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.black, width:2),
       ),
       child: TextField(
         decoration: InputDecoration(
@@ -114,14 +103,7 @@ class InputWrapper extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(225, 95, 27, .3),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.black, width:2),
       ),
       child: TextField(
         obscureText: true,

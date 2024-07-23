@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart';
 import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart';
-import 'package:iconnet_internship_mobile/utils/colors.dart';
 
 class FirstScreen extends StatelessWidget {
   const FirstScreen({Key? key}) : super(key: key);
@@ -100,8 +99,6 @@ class FirstScreen extends StatelessWidget {
             ),
           ),
           Container(
-            color: primaryColors,
-            height: 50,
           ),
         ],
       ),

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
-import 'package:iconnet_internship_mobile/screen/home_page.dart'; 
-import 'package:iconnet_internship_mobile/screen/faq_page.dart'; 
+import 'package:iconnet_internship_mobile/screen/home_page.dart';
+import 'package:iconnet_internship_mobile/screen/SK_page.dart';
+import 'package:intl/intl.dart'; 
+import 'package:file_picker/file_picker.dart'; 
 
-enum Divisi {
-  administrasi,
-  teknisi,
-}
+enum Divisi { administrasi, teknisi }
 
 class MagangFormPage extends StatefulWidget {
   const MagangFormPage({Key? key}) : super(key: key);
@@ -19,6 +18,16 @@ class MagangFormPage extends StatefulWidget {
 class _MagangFormPageState extends State<MagangFormPage> {
   int _selectedIndex = -1; // Dalam halaman ini, index navbar tidak dipilih
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Divisi? _selectedDivisi;
+  DateTime? _startDate;
+  DateTime? _endDate;
+  PlatformFile? _suratPengantar;
+  PlatformFile? _transkripNilai;
+  PlatformFile? _proposal;
+  PlatformFile? _foto;
+
+  final _formKey = GlobalKey<FormState>();
 
   void _onItemTapped(int index) {
     setState(() {
@@ -33,10 +42,54 @@ class _MagangFormPageState extends State<MagangFormPage> {
     } else if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => FAQPage()),
+        MaterialPageRoute(builder: (context) => SKPage()),
       );
     }
     // Add navigation for other pages if necessary
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2101),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: primaryColors, // header background color
+              onPrimary: Colors.white, // header text color
+              onSurface: Colors.black, // body text color
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        if (isStartDate) {
+          _startDate = picked;
+        } else {
+          _endDate = picked;
+        }
+      });
+    }
+  }
+
+  Future<void> _pickFile(bool isImage, Function(PlatformFile) onFilePicked) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: isImage ? ['jpg', 'jpeg'] : ['pdf'],
+    );
+
+    if (result != null) {
+      setState(() {
+        onFilePicked(result.files.first);
+      });
+    }
   }
 
   @override
@@ -60,99 +113,186 @@ class _MagangFormPageState extends State<MagangFormPage> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: AssetImage('asset/home1.png'), // Ganti dengan gambar lingkaran
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Masukkan Data Anda\nDengan Benar',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Username', // Ganti dengan nama pengguna
-                    style: TextStyle(color: primaryColors, fontSize: 18),
+                ),
+                const SizedBox(height: 20),
+                DropdownButtonFormField<Divisi>(
+                  decoration: InputDecoration(
+                    labelText: 'Divisi',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: primaryColors, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
-                  const SizedBox(height: 5),
-                  Text(
-                    'Email', // Ganti dengan alamat email
-                    style: TextStyle(color: primaryColors),
+                  value: _selectedDivisi,
+                  items: Divisi.values.map((Divisi divisi) {
+                    return DropdownMenuItem<Divisi>(
+                      value: divisi,
+                      child: Text(
+                        divisi == Divisi.administrasi ? 'Administrasi' : 'Teknisi',
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (Divisi? newValue) {
+                    setState(() {
+                      _selectedDivisi = newValue;
+                    });
+                  },
+                  validator: (value) => value == null ? 'Divisi harus dipilih' : null,
+                  dropdownColor: Colors.white,
+                  style: const TextStyle(color: Colors.black),
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Tanggal Mulai',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: primaryColors, width: 2),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today, color: Colors.black),
+                      onPressed: () => _selectDate(context, true),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  Divider(color: Colors.grey), // Garis pemisah
-                  SizedBox(height: 20),
-                  Column(
-                    children: [
-                      _buildInfoItem(icon: Icons.account_circle, label: 'Divisi', additionalText: 'Teknisi'),
-                      SizedBox(height: 10),
-                      _buildDivider(),
-                      _buildInfoItem(icon: Icons.calendar_today, label: 'Tanggal Mulai', additionalText: '21 April 2020'),
-                      SizedBox(height: 10),
-                      _buildDivider(),
-                      _buildInfoItem(icon: Icons.calendar_today, label: 'Tanggal Selesai', additionalText: '30 April 2020'),
-                      SizedBox(height: 10),
-                      _buildDivider(),
-                      _buildInfoItem(icon: Icons.file_copy, label: 'Surat Pengantar', additionalText: 'nama_file.pdf'),
-                      SizedBox(height: 10),
-                      _buildDivider(),
-                      _buildInfoItem(icon: Icons.file_copy, label: 'Transkrip Nilai', additionalText: 'nama_file.pdf'),
-                      SizedBox(height: 10),
-                      _buildDivider(),
-                      _buildInfoItem(icon: Icons.file_copy, label: 'Proposal', additionalText: 'nama_file.pdf'),
-                      SizedBox(height: 10),
-                      _buildDivider(),
-                      _buildInfoItem(icon: Icons.notifications, label: 'Status', additionalText: 'Pending'),
-                    ],
+                  controller: TextEditingController(
+                    text: _startDate == null ? '' : DateFormat('dd/MM/yyyy').format(_startDate!),
                   ),
-                  SizedBox(height: 20),
-                  Divider(color: Colors.grey), // Garis pemisah
-                ],
-              ),
+                  validator: (value) => value!.isEmpty ? 'Tanggal Mulai harus dipilih' : null,
+                  cursorColor: primaryColors,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Tanggal Selesai',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: primaryColors, width: 2),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today, color: Colors.black),
+                      onPressed: () => _selectDate(context, false),
+                    ),
+                  ),
+                  controller: TextEditingController(
+                    text: _endDate == null ? '' : DateFormat('dd/MM/yyyy').format(_endDate!),
+                  ),
+                  validator: (value) => value!.isEmpty ? 'Tanggal Selesai harus dipilih' : null,
+                  cursorColor: primaryColors,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Surat Pengantar (PDF)',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: primaryColors, width: 2),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.attach_file, color: Colors.black),
+                      onPressed: () => _pickFile(false, (file) => _suratPengantar = file),
+                    ),
+                  ),
+                  controller: TextEditingController(
+                    text: _suratPengantar == null ? '' : _suratPengantar!.name,
+                  ),
+                  validator: (value) => value!.isEmpty ? 'Surat Pengantar harus diunggah' : null,
+                  cursorColor: primaryColors,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Transkrip Nilai (PDF)',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: primaryColors, width: 2),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.attach_file, color: Colors.black),
+                      onPressed: () => _pickFile(false, (file) => _transkripNilai = file),
+                    ),
+                  ),
+                  controller: TextEditingController(
+                    text: _transkripNilai == null ? '' : _transkripNilai!.name,
+                  ),
+                  validator: (value) => value!.isEmpty ? 'Transkrip Nilai harus diunggah' : null,
+                  cursorColor: primaryColors,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Proposal (PDF)',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: primaryColors, width: 2),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.attach_file, color: Colors.black),
+                      onPressed: () => _pickFile(false, (file) => _proposal = file),
+                    ),
+                  ),
+                  controller: TextEditingController(
+                    text: _proposal == null ? '' : _proposal!.name,
+                  ),
+                  validator: (value) => value!.isEmpty ? 'Proposal harus diunggah' : null,
+                  cursorColor: primaryColors,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Foto (JPG)',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: primaryColors, width: 2),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.attach_file, color: Colors.black),
+                      onPressed: () => _pickFile(true, (file) => _foto = file),
+                    ),
+                  ),
+                  controller: TextEditingController(
+                    text: _foto == null ? '' : _foto!.name,
+                  ),
+                  validator: (value) => value!.isEmpty ? 'Foto harus diunggah' : null,
+                  cursorColor: primaryColors,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      // Handle form submission
+                    }
+                  },
+                  child: const Text('Submit'),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
       drawer: Navbar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       ),
-    );
-  }
-
-  Widget _buildInfoItem({required IconData icon, required String label, required String additionalText}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      child: Row(
-        children: [
-          Icon(icon, color: primaryColors, size: 30),
-          SizedBox(width: 10),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                text: '$label : ',
-                style: TextStyle(color: primaryColors, fontWeight: FontWeight.bold),
-                children: [
-                  TextSpan(
-                    text: additionalText,
-                    style: TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Divider(color: Colors.grey),
     );
   }
 }
