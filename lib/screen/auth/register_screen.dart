@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:iconnet_internship_mobile/utils/colors.dart';
-import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({Key? key}) : super(key: key);

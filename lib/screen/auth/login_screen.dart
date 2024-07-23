@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart';
-import 'package:iconnet_internship_mobile/utils/colors.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
