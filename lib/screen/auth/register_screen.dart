@@ -30,8 +30,17 @@ class RegisterPage extends StatelessWidget {
   }
 }
 
-class InputWrapper extends StatelessWidget {
+class InputWrapper extends StatefulWidget {
   const InputWrapper({Key? key}) : super(key: key);
+
+  @override
+  _InputWrapperState createState() => _InputWrapperState();
+}
+
+class _InputWrapperState extends State<InputWrapper> {
+  String _selectedRole = 'pelajar';
+  bool _isHoveringInput = false;
+  bool _isHoveringDropdown = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +48,12 @@ class InputWrapper extends StatelessWidget {
       padding: const EdgeInsets.all(30.0),
       child: Column(
         children: <Widget>[
-          SizedBox(height: 80),
+          SizedBox(height: 20),
           _buildInputField("Username"),
           const SizedBox(height: 20),
           _buildInputField("Email"),
+          const SizedBox(height: 20),
+          _buildRoleDropdown(),
           const SizedBox(height: 20),
           _buildPasswordField("Password"),
           const SizedBox(height: 20),
@@ -78,37 +89,81 @@ class InputWrapper extends StatelessWidget {
   }
 
   Widget _buildInputField(String hint) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black, width:2),
-      ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey),
-          border: InputBorder.none,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHoveringInput = true),
+      onExit: (_) => setState(() => _isHoveringInput = false),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _isHoveringInput ? Colors.blue : Colors.black, width: 2),
+          boxShadow: _isHoveringInput ? [BoxShadow(color: Colors.blue, blurRadius: 10)] : [],
+        ),
+        child: TextField(
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Colors.grey),
+            border: InputBorder.none,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildPasswordField(String hint) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black, width:2),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHoveringInput = true),
+      onExit: (_) => setState(() => _isHoveringInput = false),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _isHoveringInput ? Colors.blue : Colors.black, width: 2),
+          boxShadow: _isHoveringInput ? [BoxShadow(color: Colors.blue, blurRadius: 10)] : [],
+        ),
+        child: TextField(
+          obscureText: true,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Colors.grey),
+            border: InputBorder.none,
+          ),
+        ),
       ),
-      child: TextField(
-        obscureText: true,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey),
-          border: InputBorder.none,
+    );
+  }
+
+  Widget _buildRoleDropdown() {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHoveringDropdown = true),
+      onExit: (_) => setState(() => _isHoveringDropdown = false),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _isHoveringDropdown ? Colors.blue : Colors.black, width: 2),
+          boxShadow: _isHoveringDropdown ? [BoxShadow(color: Colors.blue, blurRadius: 10)] : [],
+        ),
+        child: DropdownButton<String>(
+          value: _selectedRole,
+          isExpanded: true,
+          underline: SizedBox(),
+          icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+          dropdownColor: Colors.white,
+          items: <String>['pelajar', 'mahasiswa'].map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value, style: TextStyle(color: Colors.grey)),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedRole = newValue!;
+            });
+          },
         ),
       ),
     );

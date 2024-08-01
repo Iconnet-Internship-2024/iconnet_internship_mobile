@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
-import 'package:iconnet_internship_mobile/screen/home_page.dart'; 
+import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart'; 
 import 'package:iconnet_internship_mobile/screen/SK_page.dart'; 
+import 'package:iconnet_internship_mobile/screen/profile_page.dart';
 
 class Navbar extends StatefulWidget {
   final int selectedIndex;
@@ -22,20 +23,31 @@ class _NavbarState extends State<Navbar> {
   Widget build(BuildContext context) {
     return Drawer(
       child: Container(
-        color: primaryColors, // Warna latar belakang drawer sesuai primaryColors
+        color: primaryColors,
         child: Column(
           children: [
             Container(
-              height: 120,
+              height: 100,
               width: double.infinity,
+              padding: const EdgeInsets.only(top: 60),
               alignment: Alignment.center,
-              child: const Text(
-                'PLN Icon Plus Internship', // Judul navbar
-                style: TextStyle(
-                  color: Colors.white, // Warna teks putih
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Column(
+                children: [
+                  const Text(
+                    'PLN Icon Plus Internship',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    height: 2,
+                    color: Colors.white,
+                    width: double.infinity,
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -45,19 +57,19 @@ class _NavbarState extends State<Navbar> {
                     icon: Icons.home,
                     text: 'Beranda',
                     index: 0,
-                    context: context, // Pass the context
+                    context: context,
                   ),
                   _buildNavItem(
                     icon: Icons.question_answer,
                     text: 'Syarat & Ketentuan',
                     index: 1,
-                    context: context, // Pass the context
+                    context: context,
                   ),
                   _buildNavItem(
                     icon: Icons.person,
                     text: 'Profile',
                     index: 2,
-                    context: context, // Pass the context
+                    context: context,
                   ),
                 ],
               ),
@@ -72,46 +84,41 @@ class _NavbarState extends State<Navbar> {
     required IconData icon,
     required String text,
     required int index,
-    required BuildContext context, // Add context parameter
+    required BuildContext context,
   }) {
     return InkWell(
       onTap: () {
         widget.onItemTapped(index);
-        Navigator.pop(context);
+        Navigator.pop(context); // Close the drawer
 
         // Navigate to the corresponding page
         if (index == 0) {
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => MahasiswaDashboard()),
           );
         } else if (index == 1) {
-          // Navigate to FAQ page
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => SKPage()), // Ganti dengan halaman FAQ Anda
+            MaterialPageRoute(builder: (context) => SKPage()),
           );
         } else if (index == 2) {
-          // Navigate to Profile page
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => ProfilePage()), // Ganti dengan halaman Profile Anda
-          // );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ProfilePage()),
+          );
         }
       },
-      onHover: (isHovering) {
-        setState(() {
-          // Set the hover state for this item
-        });
-      },
       child: Container(
-        color: widget.selectedIndex == index ? Colors.white24 : Colors.transparent, // Warna saat item terpilih
+        color: widget.selectedIndex == index ? Colors.white24 : Colors.transparent,
         child: ListTile(
-          leading: Icon(icon, color: Colors.white), // Icon berwarna putih
-          title: Text(text, style: TextStyle(color: Colors.white)), // Teks berwarna putih
-          selected: widget.selectedIndex == index,
-          selectedTileColor: Colors.white24, // Warna saat item terpilih
-          hoverColor: Colors.white24, // Warna saat item di-hover
+          leading: Icon(icon, color: Colors.white),
+          title: Text(
+            text,
+            style: TextStyle(
+              color: widget.selectedIndex == index ? Colors.black : Colors.white,
+            ),
+          ),
         ),
       ),
     );
