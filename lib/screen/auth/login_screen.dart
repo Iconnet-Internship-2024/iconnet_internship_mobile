@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart';
+import 'package:iconnet_internship_mobile/screen/auth/passwords/forgot_password_email_page.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -58,9 +59,9 @@ class LoginPage extends StatelessWidget {
                             TextSpan(
                               text: 'Sign up!',
                               style: TextStyle(
-                                color: Colors.black,
+                                color: Colors.blue,
                                 decoration: TextDecoration.underline,
-                                decorationColor: Colors.black,
+                                decorationColor: Colors.blue,
                               ),
                             ),
                           ],
@@ -69,9 +70,23 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    "Forgot Password?",
-                    style: TextStyle(color: Colors.black, decoration: TextDecoration.underline),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ForgotPasswordEmailPage(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "Forgot Password?",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Colors.blue,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 100),
                 ],
@@ -133,7 +148,7 @@ class InputWrapper extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black, width:2),
+        border: Border.all(color: Colors.black, width: 2),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust the padding as needed
@@ -154,7 +169,7 @@ class InputWrapper extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black, width:2),
+        border: Border.all(color: Colors.black, width: 2),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust the padding as needed

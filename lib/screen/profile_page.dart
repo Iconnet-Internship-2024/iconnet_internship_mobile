@@ -93,7 +93,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         color: Colors.white,
                       ),
                     ),
-                    // const SizedBox(height: 0),
                     const Text(
                       'user@example.com',
                       style: TextStyle(
@@ -105,6 +104,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 20),
+              _buildStatusOption(
+                context,
+                icon: Icons.notifications,
+                status: 'Menunggu Diproses', // Ganti ini sesuai dengan status saat ini
+              ),
               _buildProfileOption(
                 context,
                 icon: Icons.edit,
@@ -186,6 +190,62 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatusOption(BuildContext context,
+      {required IconData icon, required String status}) {
+    Color statusColor;
+
+    switch (status) {
+      case 'Diterima':
+        statusColor = Colors.green;
+        break;
+      case 'Ditolak':
+        statusColor = Colors.red;
+        break;
+      case 'Diproses':
+        statusColor = Colors.orange;
+        break;
+      case 'Menunggu Diproses':
+        statusColor = Colors.blue;
+        break;
+      default:
+        statusColor = Colors.black;
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF6DCDC),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Icon(
+              icon,
+              color: primaryColors,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Status: $status',
+              style: TextStyle(
+                fontSize: 16,
+                color: statusColor,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
