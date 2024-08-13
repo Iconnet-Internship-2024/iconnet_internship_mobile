@@ -82,21 +82,26 @@ class _PklFormSubmissionState extends State<PklFormSubmission> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Konfirmasi'),
-            content: Text('Anda yakin mau mengirimkan formulir ini? Data tidak dapat diubah setelah pengiriman.'),
+            backgroundColor: Colors.white,
+            title: Text('Konfirmasi',
+            style:TextStyle(color: Colors.black)),
+            content: Text('Anda yakin mau mengirimkan formulir ini? Data tidak dapat diubah setelah pengiriman.',
+            style:TextStyle(color: Colors.black)),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Batal'),
+                child: Text('Batal',
+                style:TextStyle(color: primaryColors)),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                   // Handle form submission
                 },
-                child: Text('Kirim'),
+                child: Text('Kirim',
+                style:TextStyle(color: primaryColors)),
               ),
             ],
           );

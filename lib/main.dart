@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:iconnet_internship_mobile/screen/first_screen.dart';
+// import 'package:iconnet_internship_mobile/screen/first_screen.dart';
 // import 'package:iconnet_internship_mobile/screen/pelajar_dashboard.dart';
-// import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart';
+import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart';
 // import 'package:iconnet_internship_mobile/screen/auth/passwords/reset_password_form_page.dart';
 
 void main() {
@@ -15,9 +15,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FirstScreen(),
+      // home: FirstScreen(),
       // home: PelajarDashboard(),
-      // home: MahasiswaDashboard(),
+      home: MahasiswaDashboard(),
       // home: ResetPasswordFormPage(),
     );
   }
