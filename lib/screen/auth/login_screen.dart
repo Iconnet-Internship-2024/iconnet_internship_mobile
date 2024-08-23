@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:iconnet_internship_mobile/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart';
-import 'package:iconnet_internship_mobile/screen/auth/passwords/forgot_password_email_page.dart';
+import 'package:iconnet_internship_mobile/screen/auth/passwords/reset_password_form_page.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -75,7 +78,7 @@ class LoginPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ForgotPasswordEmailPage(),
+                          builder: (context) => ResetPasswordFormPage(),
                         ),
                       );
                     },
@@ -99,8 +102,81 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-class InputWrapper extends StatelessWidget {
+class InputWrapper extends StatefulWidget {
   const InputWrapper({Key? key}) : super(key: key);
+
+  @override
+  _InputWrapperState createState() => _InputWrapperState();
+}
+
+class _InputWrapperState extends State<InputWrapper> {
+  final TextEditingController _identifierController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  void _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final authService = AuthService();
+    try {
+      final authResponse = await authService.login(
+        _identifierController.text,
+        _passwordController.text,
+      );
+
+      print('Login Response: Message: ${authResponse.message}');
+
+      if (authResponse.isSuccess) {
+        final prefs = await SharedPreferences.getInstance();
+        String token = authResponse.token;
+
+        // Decode token untuk mendapatkan roleId
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        int roleId = decodedToken['roleId'];
+
+        // Simpan roleId
+        await prefs.setInt('roleId', roleId);
+
+        if (roleId == 1) {
+          Navigator.pushReplacementNamed(context, '/pelajar_dashboard');
+        } else if (roleId == 2) {
+          Navigator.pushReplacementNamed(context, '/mahasiswa_dashboard');
+        } else {
+          _showDialog('Error', 'Unknown role ID: $roleId');
+        }
+      } else {
+        _showDialog('Login Failed', authResponse.message);
+      }
+    } catch (e) {
+      _showDialog('Error', 'Login failed. Please check your credentials.');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +185,9 @@ class InputWrapper extends StatelessWidget {
       child: Column(
         children: <Widget>[
           const SizedBox(height: 80),
-          _buildInputField("Email"),
+          _buildInputField("Username or Email", _identifierController),
           const SizedBox(height: 20),
-          _buildPasswordField("Password"),
+          _buildPasswordField("Password", _passwordController),
           const SizedBox(height: 20),
           Container(
             width: 150,
@@ -124,17 +200,17 @@ class InputWrapper extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: () {
-                // Add functionality for login button here
-              },
-              child: const Text(
-                "Sign In",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Colors.white,
-                ),
-              ),
+              onPressed: _isLoading ? null : _login,
+              child: _isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      "Sign In",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -142,45 +218,23 @@ class InputWrapper extends StatelessWidget {
     );
   }
 
-  Widget _buildInputField(String hint) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black, width: 2),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust the padding as needed
-        child: TextField(
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Colors.grey),
-            border: InputBorder.none,
-          ),
-        ),
+  Widget _buildInputField(String hintText, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        hintText: hintText,
       ),
     );
   }
 
-  Widget _buildPasswordField(String hint) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black, width: 2),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust the padding as needed
-        child: TextField(
-          obscureText: true,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Colors.grey),
-            border: InputBorder.none,
-          ),
-        ),
+  Widget _buildPasswordField(String hintText, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      obscureText: true,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        hintText: hintText,
       ),
     );
   }

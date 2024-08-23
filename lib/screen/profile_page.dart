@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
 import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart';
 import 'package:iconnet_internship_mobile/screen/SK_page.dart';
 import 'package:iconnet_internship_mobile/screen/edit_profile_page.dart';
 import 'package:iconnet_internship_mobile/screen/change_password_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -23,24 +26,56 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     if (index == 0) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MahasiswaDashboard()),
       );
     } else if (index == 1) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => SKPage()),
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ProfilePage()),
+      );
+    }
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('authToken');
+
+    final response = await http.delete(
+      Uri.parse('http://10.0.2.2:3000/auth/logout'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      await prefs.remove('authToken'); // Hapus token dari local storage
+      await prefs.remove('roleId'); // Hapus roleId dari local storage
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()), // Arahkan ke halaman login
+        (route) => false, // Hapus semua route dari stack
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout failed, please try again.')),
       );
     }
   }
 
   Future<bool> _onWillPop() async {
     if (Navigator.canPop(context)) {
-      Navigator.pop(context); 
-      return false; 
+      Navigator.pop(context);
+      return false;
     }
-    return true; 
+    return true;
   }
 
   @override
@@ -107,7 +142,7 @@ class _ProfilePageState extends State<ProfilePage> {
               _buildStatusOption(
                 context,
                 icon: Icons.notifications,
-                status: 'Menunggu Diproses', // Ganti ini sesuai dengan status saat ini
+                status: 'Menunggu Diproses',
               ),
               _buildProfileOption(
                 context,
@@ -136,7 +171,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icons.logout,
                 text: 'Logout',
                 onTap: () {
-                  // Tambahkan fungsi logout
+                  _logout(); // Memanggil fungsi logout
                 },
               ),
             ],
@@ -212,7 +247,8 @@ class _ProfilePageState extends State<ProfilePage> {
         statusColor = Colors.blue;
         break;
       default:
-        statusColor = Colors.black;
+        statusColor = Colors.grey;
+        break;
     }
 
     return Container(
@@ -227,18 +263,18 @@ class _ProfilePageState extends State<ProfilePage> {
           Container(
             padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: const Color(0xFFF6DCDC),
+              color: statusColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(5),
             ),
             child: Icon(
               icon,
-              color: primaryColors,
+              color: statusColor,
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Status: $status',
+              status,
               style: TextStyle(
                 fontSize: 16,
                 color: statusColor,

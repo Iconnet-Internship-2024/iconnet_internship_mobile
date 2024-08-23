@@ -1,171 +1,167 @@
 import 'package:flutter/material.dart';
+import 'package:iconnet_internship_mobile/services/api_service.dart';
+// import 'package:iconnet_internship_mobile/models/auth_respone.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
+
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  String _selectedRole = 'siswa';
+  bool _isLoading = false;
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  int _getRoleId(String role) {
+    switch (role) {
+      case 'siswa':
+        return 1;
+      case 'mahasiswa':
+        return 2;
+      default:
+        return 1; // atau handle error sesuai kebutuhan
+    }
+  }
+
+  void _register() async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final authService = AuthService();
+    try {
+      await authService.register(
+        _usernameController.text,
+        _emailController.text,
+        _passwordController.text,
+        _confirmPasswordController.text,
+        _getRoleId(_selectedRole),  // Kirim role ID ke backend
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration successful')),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration failed: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(height: 100),
-                  const LogoAndText(),
-                  const SizedBox(height: 20),
-                  const InputWrapper(),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class InputWrapper extends StatefulWidget {
-  const InputWrapper({Key? key}) : super(key: key);
-
-  @override
-  _InputWrapperState createState() => _InputWrapperState();
-}
-
-class _InputWrapperState extends State<InputWrapper> {
-  String _selectedRole = 'pelajar';
-  bool _isHoveringInput = false;
-  bool _isHoveringDropdown = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(30.0),
-      child: Column(
-        children: <Widget>[
-          SizedBox(height: 20),
-          _buildInputField("Username"),
-          const SizedBox(height: 20),
-          _buildInputField("Email"),
-          const SizedBox(height: 20),
-          _buildRoleDropdown(),
-          const SizedBox(height: 20),
-          _buildPasswordField("Password"),
-          const SizedBox(height: 20),
-          _buildPasswordField("Confirm Password"),
-          const SizedBox(height: 30),
-          Container(
-            width: 150,
-            height: 40,
-            margin: const EdgeInsets.all(10),
-            child: ElevatedButton(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const SizedBox(height: 50),
+            const LogoAndText(),
+            const SizedBox(height: 20),
+            _buildInputField("Username", _usernameController),
+            const SizedBox(height: 20),
+            _buildInputField("Email", _emailController),
+            const SizedBox(height: 20),
+            _buildRoleDropdown(),
+            const SizedBox(height: 20),
+            _buildPasswordField("Password", _passwordController),
+            const SizedBox(height: 20),
+            _buildPasswordField("Confirm Password", _confirmPasswordController),
+            const SizedBox(height: 30),
+            ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
+                minimumSize: Size(double.infinity, 50),
               ),
-              onPressed: () {
-                // Add functionality for registration button here
-              },
-              child: const Text(
-                "Register",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Colors.white,
-                ),
-              ),
+              onPressed: _isLoading ? null : _register,
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text(
+                      "Register",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInputField(String hint) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHoveringInput = true),
-      onExit: (_) => setState(() => _isHoveringInput = false),
-      child: Container(
-        padding: const EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _isHoveringInput ? Colors.blue : Colors.black, width: 2),
-          boxShadow: _isHoveringInput ? [BoxShadow(color: Colors.blue, blurRadius: 10)] : [],
-        ),
-        child: TextField(
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Colors.grey),
-            border: InputBorder.none,
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildPasswordField(String hint) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHoveringInput = true),
-      onExit: (_) => setState(() => _isHoveringInput = false),
-      child: Container(
-        padding: const EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: Colors.white,
+  Widget _buildInputField(String hint, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hint,
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _isHoveringInput ? Colors.blue : Colors.black, width: 2),
-          boxShadow: _isHoveringInput ? [BoxShadow(color: Colors.blue, blurRadius: 10)] : [],
         ),
-        child: TextField(
-          obscureText: true,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Colors.grey),
-            border: InputBorder.none,
-          ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(String hint, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      obscureText: true,
+      decoration: InputDecoration(
+        hintText: hint,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
     );
   }
 
   Widget _buildRoleDropdown() {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHoveringDropdown = true),
-      onExit: (_) => setState(() => _isHoveringDropdown = false),
-      child: Container(
-        padding: const EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: Colors.white,
+    return DropdownButtonFormField<String>(
+      value: _selectedRole,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _isHoveringDropdown ? Colors.blue : Colors.black, width: 2),
-          boxShadow: _isHoveringDropdown ? [BoxShadow(color: Colors.blue, blurRadius: 10)] : [],
-        ),
-        child: DropdownButton<String>(
-          value: _selectedRole,
-          isExpanded: true,
-          underline: SizedBox(),
-          icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
-          dropdownColor: Colors.white,
-          items: <String>['pelajar', 'mahasiswa'].map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value, style: TextStyle(color: Colors.grey)),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedRole = newValue!;
-            });
-          },
         ),
       ),
+      items: <String>['siswa', 'mahasiswa'].map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      onChanged: (String? newValue) {
+        setState(() {
+          _selectedRole = newValue!;
+        });
+      },
     );
   }
 }

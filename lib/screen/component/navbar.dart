@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart'; 
+import 'package:iconnet_internship_mobile/screen/pelajar_dashboard.dart'; 
 import 'package:iconnet_internship_mobile/screen/SK_page.dart'; 
 import 'package:iconnet_internship_mobile/screen/profile_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Navbar extends StatefulWidget {
   final int selectedIndex;
@@ -29,7 +31,7 @@ class _NavbarState extends State<Navbar> {
             Container(
               height: 100,
               width: double.infinity,
-              padding: const EdgeInsets.only(top: 60),
+              padding: const EdgeInsets.only(top: 30),
               alignment: Alignment.center,
               child: Column(
                 children: [
@@ -37,66 +39,49 @@ class _NavbarState extends State<Navbar> {
                     'PLN Icon Plus Internship',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      fontSize: 20,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Container(
-                    height: 2,
-                    color: Colors.white,
-                    width: double.infinity,
+                  const SizedBox(height: 5),
+                  const Text(
+                    'Dashboard',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                    ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildNavItem(
-                    icon: Icons.home,
-                    text: 'Beranda',
-                    index: 0,
-                    context: context,
-                  ),
-                  _buildNavItem(
-                    icon: Icons.question_answer,
-                    text: 'Syarat & Ketentuan',
-                    index: 1,
-                    context: context,
-                  ),
-                  _buildNavItem(
-                    icon: Icons.person,
-                    text: 'Profile',
-                    index: 2,
-                    context: context,
-                  ),
-                ],
-              ),
-            ),
+            const Divider(),
+            _buildDrawerItem(context, Icons.dashboard, "Dashboard", 0),
+            _buildDrawerItem(context, Icons.note, "SK", 1),
+            _buildDrawerItem(context, Icons.person, "Profile", 2),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required String text,
-    required int index,
-    required BuildContext context,
-  }) {
+  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, int index) {
     return InkWell(
-      onTap: () {
-        widget.onItemTapped(index);
-        Navigator.pop(context); // Close the drawer
+      onTap: () async {
+        final prefs = await SharedPreferences.getInstance();
+        int? roleId = prefs.getInt('roleId');
 
-        // Navigate to the corresponding page
         if (index == 0) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => MahasiswaDashboard()),
-          );
+          if (roleId == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => PelajarDashboard()),
+            );
+          } else if (roleId == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MahasiswaDashboard()),
+            );
+          }
         } else if (index == 1) {
           Navigator.pushReplacement(
             context,
@@ -110,15 +95,28 @@ class _NavbarState extends State<Navbar> {
         }
       },
       child: Container(
-        color: widget.selectedIndex == index ? Colors.white24 : Colors.transparent,
-        child: ListTile(
-          leading: Icon(icon, color: Colors.white),
-          title: Text(
-            text,
-            style: TextStyle(
-              color: widget.selectedIndex == index ? Colors.black : Colors.white,
+        padding: const EdgeInsets.all(10),
+        decoration: widget.selectedIndex == index
+            ? const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.horizontal(right: Radius.circular(15)),
+              )
+            : null,
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: widget.selectedIndex == index ? primaryColors : Colors.white,
             ),
-          ),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: TextStyle(
+                color: widget.selectedIndex == index ? primaryColors : Colors.white,
+                fontWeight: widget.selectedIndex == index ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
         ),
       ),
     );
