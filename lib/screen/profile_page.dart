@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
 import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart';
 import 'package:iconnet_internship_mobile/screen/SK_page.dart';
 import 'package:iconnet_internship_mobile/screen/edit_profile_page.dart';
 import 'package:iconnet_internship_mobile/screen/change_password_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:iconnet_internship_mobile/screen/first_screen.dart';
+import 'package:iconnet_internship_mobile/services/auth_service.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -19,6 +22,59 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   int _selectedIndex = 2;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final AuthService _authService = AuthService();
+  String _username = '';
+  String _email = '';
+  String? _photoUrl;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('authToken');
+      if (token != null) {
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        int userId = decodedToken['userId'];
+        final userData = await _authService.getUserById(userId);
+
+        String? photoUrl;
+        try {
+          final applicantData = await _authService.getApplicantByUserId(userId);
+          photoUrl = applicantData['photoUrl'];
+        } catch (e) {
+          if (e is DioError && e.response?.statusCode == 404) {
+            // Jika data applicant tidak ditemukan, foto profil di-set null
+            photoUrl = null;
+          } else {
+            // Jika error lain, lempar ulang errornya
+            throw e;
+          }
+        }
+
+        setState(() {
+          _username = userData['username'];
+          _email = userData['email'];
+          _photoUrl = photoUrl;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Failed to fetch user data: $e');
+      if (e is DioError && e.response?.statusCode == 401) {
+        // Handle unauthorized error by redirecting to login page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      }
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -44,26 +100,14 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    final authToken = prefs.getString('authToken');
-
-    final response = await http.delete(
-      Uri.parse('http://10.0.2.2:3000/auth/logout'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $authToken',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      await prefs.remove('authToken'); // Hapus token dari local storage
-      await prefs.remove('roleId'); // Hapus roleId dari local storage
+    try {
+      await _authService.logout();
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => LoginPage()), // Arahkan ke halaman login
-        (route) => false, // Hapus semua route dari stack
+        MaterialPageRoute(builder: (context) => FirstScreen()),
+        (route) => false,
       );
-    } else {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Logout failed, please try again.')),
       );
@@ -100,83 +144,95 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 220,
-                padding: const EdgeInsets.only(top: 15),
-                decoration: BoxDecoration(
-                  color: primaryColors,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage('asset/profile_jisoo.jpg'),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Username',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
+                    Container(
+                      width: double.infinity,
+                      height: 220,
+                      padding: const EdgeInsets.only(top: 15),
+                      decoration: BoxDecoration(
+                        color: primaryColors,
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.white,
+                            backgroundImage: _photoUrl != null
+                                ? NetworkImage(_photoUrl!)
+                                : null,
+                            child: _photoUrl == null
+                                ? Center(
+                                    child: const Text(
+                                      "Belum ada foto",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            _username,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            _email,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white),
+                          ),
+                        ],
                       ),
                     ),
-                    const Text(
-                      'user@example.com',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                      ),
+                    const SizedBox(height: 20),
+                    _buildStatusOption(
+                      context,
+                      icon: Icons.notifications,
+                      status: 'Menunggu Diproses',
+                    ),
+                    _buildProfileOption(
+                      context,
+                      icon: Icons.edit,
+                      text: 'Edit Profile',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => EditProfilePage()),
+                        );
+                      },
+                    ),
+                    _buildProfileOption(
+                      context,
+                      icon: Icons.lock,
+                      text: 'Ubah Password',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+                        );
+                      },
+                    ),
+                    _buildProfileOption(
+                      context,
+                      icon: Icons.logout,
+                      text: 'Logout',
+                      onTap: () {
+                        _logout(); 
+                      },
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildStatusOption(
-                context,
-                icon: Icons.notifications,
-                status: 'Menunggu Diproses',
-              ),
-              _buildProfileOption(
-                context,
-                icon: Icons.edit,
-                text: 'Edit Profile',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => EditProfilePage()),
-                  );
-                },
-              ),
-              _buildProfileOption(
-                context,
-                icon: Icons.lock,
-                text: 'Ubah Password',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ChangePasswordPage()),
-                  );
-                },
-              ),
-              _buildProfileOption(
-                context,
-                icon: Icons.logout,
-                text: 'Logout',
-                onTap: () {
-                  _logout(); // Memanggil fungsi logout
-                },
-              ),
-            ],
-          ),
-        ),
         drawer: Navbar(
           selectedIndex: _selectedIndex,
           onItemTapped: _onItemTapped,
@@ -190,39 +246,17 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFD9D9D9),
+          color: Colors.grey[200],
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF6DCDC),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Icon(
-                icon,
-                color: primaryColors,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.black,
-            ),
+            Icon(icon, color: primaryColors),
+            const SizedBox(width: 16),
+            Text(text, style: const TextStyle(fontSize: 16)),
           ],
         ),
       ),
@@ -231,56 +265,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildStatusOption(BuildContext context,
       {required IconData icon, required String status}) {
-    Color statusColor;
-
-    switch (status) {
-      case 'Diterima':
-        statusColor = Colors.green;
-        break;
-      case 'Ditolak':
-        statusColor = Colors.red;
-        break;
-      case 'Diproses':
-        statusColor = Colors.orange;
-        break;
-      case 'Menunggu Diproses':
-        statusColor = Colors.blue;
-        break;
-      default:
-        statusColor = Colors.grey;
-        break;
-    }
-
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFD9D9D9),
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: Icon(
-              icon,
-              color: statusColor,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              status,
-              style: TextStyle(
-                fontSize: 16,
-                color: statusColor,
-              ),
-            ),
-          ),
+          Icon(icon, color: primaryColors),
+          const SizedBox(width: 16),
+          Text(status, style: const TextStyle(fontSize: 16)),
         ],
       ),
     );

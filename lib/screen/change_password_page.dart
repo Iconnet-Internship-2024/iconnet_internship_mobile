@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:iconnet_internship_mobile/services/auth_service.dart';
+import 'package:iconnet_internship_mobile/screen/auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({Key? key}) : super(key: key);
@@ -14,11 +19,63 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final AuthService _authService = AuthService();
+  String _username = '';
+  String _email = '';
+  String? _photoUrl = '';
+  bool _isLoading = true;
   bool _isCurrentPasswordVisible = false;
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-
   int _selectedIndex = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('authToken');
+      if (token != null) {
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        int userId = decodedToken['userId'];
+        final userData = await _authService.getUserById(userId);
+        // final applicantData = await _authService.getApplicantByUserId(userId);
+                
+        String? photoUrl;
+        try {
+          final applicantData = await _authService.getApplicantByUserId(userId);
+          photoUrl = applicantData['photoUrl'];
+        } catch (e) {
+          if (e is DioError && e.response?.statusCode == 404) {
+            // Jika data applicant tidak ditemukan, foto profil di-set null
+            photoUrl = null;
+          } else {
+            // Jika error lain, lempar ulang errornya
+            throw e;
+          }
+        }
+
+        setState(() {
+          _username = userData['username'];
+          _email = userData['email'];
+          _photoUrl = photoUrl;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Failed to fetch user data: $e');
+      if (e is DioError && e.response?.statusCode == 401) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      }
+    }
+  }
 
   void _togglePasswordVisibility(TextEditingController controller) {
     setState(() {
@@ -30,6 +87,44 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
       }
     });
+  }
+
+  void _updatePassword() async {
+    final oldPassword = _currentPasswordController.text;
+    final newPassword = _newPasswordController.text;
+    final confirmNewPass = _confirmPasswordController.text;
+
+    if (newPassword.isEmpty || confirmNewPass.isEmpty || oldPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Semua field harus diisi')),
+      );
+      return;
+    }
+
+    if (newPassword != confirmNewPass) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password baru dan konfirmasi tidak sama')),
+      );
+      return;
+    }
+
+    // Panggil API update password
+    try {
+      await _authService.updatePassword(oldPassword, newPassword, confirmNewPass);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password berhasil diubah')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengubah password: $e')),
+      );
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void _onItemTapped(int index) {
@@ -68,135 +163,145 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           ),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 220,
-                padding: const EdgeInsets.only(top: 15),
-                decoration: BoxDecoration(
-                  color: primaryColors,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage('asset/profile_jisoo.jpg'),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Username',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
+                    Container(
+                      width: double.infinity,
+                      height: 220,
+                      padding: const EdgeInsets.only(top: 15),
+                      decoration: BoxDecoration(
+                        color: primaryColors,
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.white,
+                            backgroundImage: _photoUrl != null
+                                ? NetworkImage(_photoUrl!)
+                                : null,
+                            child: _photoUrl == null
+                                ? Center(
+                                    child: const Text(
+                                      "Belum ada foto",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            _username,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            _email,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      'user@example.com',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
+                    const SizedBox(height: 50),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Password Saat Ini',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          _buildPasswordField(
+                            hint: 'masukkan password saat ini',
+                            controller: _currentPasswordController,
+                            isObscured: !_isCurrentPasswordVisible,
+                            onVisibilityToggle: () => _togglePasswordVisibility(_currentPasswordController),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Password Baru',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          _buildPasswordField(
+                            hint: 'masukkan password baru',
+                            controller: _newPasswordController,
+                            isObscured: !_isNewPasswordVisible,
+                            onVisibilityToggle: () => _togglePasswordVisibility(_newPasswordController),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Ulangi Password Baru',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          _buildPasswordField(
+                            hint: 'ulangi password baru',
+                            controller: _confirmPasswordController,
+                            isObscured: !_isConfirmPasswordVisible,
+                            onVisibilityToggle: () => _togglePasswordVisibility(_confirmPasswordController),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: _updatePassword,
+                        child: const Text(
+                          'Ubah Password',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 50),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Password Saat Ini',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    _buildPasswordField(
-                      hint: 'masukkan password saat ini',
-                      controller: _currentPasswordController,
-                      isObscured: !_isCurrentPasswordVisible,
-                      onVisibilityToggle: () => _togglePasswordVisibility(_currentPasswordController),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Password Baru',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    _buildPasswordField(
-                      hint: 'masukkan password baru',
-                      controller: _newPasswordController,
-                      isObscured: !_isNewPasswordVisible,
-                      onVisibilityToggle: () => _togglePasswordVisibility(_newPasswordController),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Ulangi Password Baru',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    _buildPasswordField(
-                      hint: 'ulangi password baru',
-                      controller: _confirmPasswordController,
-                      isObscured: !_isConfirmPasswordVisible,
-                      onVisibilityToggle: () => _togglePasswordVisibility(_confirmPasswordController),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    // Tambahkan fungsi untuk mengubah password
-                  },
-                  child: const Text(
-                    'Ubah Password',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
         drawer: Navbar(
           selectedIndex: _selectedIndex,
           onItemTapped: _onItemTapped,
@@ -216,10 +321,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       obscureText: isObscured,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey, fontSize: 14), 
-        border: OutlineInputBorder(
-          borderSide: BorderSide(color: primaryColors, width: 2),
-        ),
+        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+        border: const OutlineInputBorder(),
         suffixIcon: IconButton(
           icon: Icon(
             isObscured ? Icons.visibility_off : Icons.visibility,
@@ -228,7 +331,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           onPressed: onVisibilityToggle,
         ),
       ),
-      cursorColor: primaryColors,
+      style: const TextStyle(color: Colors.black),
     );
   }
 }

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:iconnet_internship_mobile/services/applicant_service.dart';
+import 'package:iconnet_internship_mobile/screen/component/navbar.dart'; // Pastikan pathnya benar
+import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_applicant/magang_applicant_form.dart';
+import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_applicant/magang_details_applicant.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
-import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
-import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_personal.dart';
 
 class MahasiswaDashboard extends StatefulWidget {
   const MahasiswaDashboard({Key? key}) : super(key: key);
@@ -11,8 +15,40 @@ class MahasiswaDashboard extends StatefulWidget {
 }
 
 class _MahasiswaDashboardState extends State<MahasiswaDashboard> {
+  final ApplicantService _applicantService = ApplicantService();
+  bool _isLoading = true;
+  bool _isApplicantExists = false;
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkApplicantData();
+  }
+
+  Future<void> _checkApplicantData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('authToken');
+      if (token != null) {
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        int userId = decodedToken['userId'];
+
+        final applicantData = await _applicantService.getApplicantByUserId(userId);
+
+        setState(() {
+          _isApplicantExists = applicantData.isNotEmpty;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Failed to load applicant data: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -46,54 +82,60 @@ class _MahasiswaDashboardState extends State<MahasiswaDashboard> {
           ),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MagangFormPersonal()),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                  child: Container(
-                    width: double.infinity,
-                    height: 200,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.black, width: 3),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(
-                          Icons.school,
-                          size: 80,
-                          color: Colors.black,
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Magang/Kerja Praktik',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => _isApplicantExists
+                                ? ApplicantDetailsScreen()
+                                : ApplicantFormScreen(),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        child: Container(
+                          width: double.infinity,
+                          height: 200,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.black, width: 3),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.school,
+                                size: 80,
+                                color: Colors.black,
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Magang/Kerja Praktik',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 50),
+                    // Tambahkan lebih banyak card sesuai kebutuhan
+                  ],
                 ),
               ),
-              const SizedBox(height: 50),
-              // Tambahkan lebih banyak card sesuai kebutuhan
-            ],
-          ),
-        ),
         drawer: Navbar(
           selectedIndex: _selectedIndex,
           onItemTapped: _onItemTapped,

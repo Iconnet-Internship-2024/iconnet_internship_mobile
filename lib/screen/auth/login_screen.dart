@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iconnet_internship_mobile/services/api_service.dart';
+import 'package:iconnet_internship_mobile/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart';
 import 'package:iconnet_internship_mobile/screen/auth/passwords/reset_password_form_page.dart';
@@ -54,7 +54,7 @@ class LoginPage extends StatelessWidget {
                       },
                       child: RichText(
                         text: const TextSpan(
-                          text: "Haven't account? ",
+                          text: "Don't have an account? ",
                           style: TextStyle(
                             color: Colors.black,
                           ),
@@ -126,23 +126,28 @@ class _InputWrapperState extends State<InputWrapper> {
         _passwordController.text,
       );
 
-      print('Login Response: Message: ${authResponse.message}');
-
       if (authResponse.isSuccess) {
         final prefs = await SharedPreferences.getInstance();
         String token = authResponse.token;
 
-        // Decode token untuk mendapatkan roleId
+        // Simpan token
+        await prefs.setString('authToken', token);
+
+        print('Token saved: $token');
+
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
         int roleId = decodedToken['roleId'];
+
+        print('Decoded token: $decodedToken');
 
         // Simpan roleId
         await prefs.setInt('roleId', roleId);
 
-        if (roleId == 1) {
-          Navigator.pushReplacementNamed(context, '/pelajar_dashboard');
-        } else if (roleId == 2) {
+        // Redirect berdasarkan roleId
+        if (roleId == 2) {
           Navigator.pushReplacementNamed(context, '/mahasiswa_dashboard');
+        } else if (roleId == 1) {
+          Navigator.pushReplacementNamed(context, '/pelajar_dashboard');
         } else {
           _showDialog('Error', 'Unknown role ID: $roleId');
         }
@@ -202,7 +207,7 @@ class _InputWrapperState extends State<InputWrapper> {
               ),
               onPressed: _isLoading ? null : _login,
               child: _isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator(color: Colors.white)
                   : const Text(
                       "Sign In",
                       style: TextStyle(
@@ -218,23 +223,27 @@ class _InputWrapperState extends State<InputWrapper> {
     );
   }
 
-  Widget _buildInputField(String hintText, TextEditingController controller) {
+  Widget _buildInputField(String label, TextEditingController controller) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        hintText: hintText,
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }
 
-  Widget _buildPasswordField(String hintText, TextEditingController controller) {
+  Widget _buildPasswordField(String label, TextEditingController controller) {
     return TextField(
       controller: controller,
       obscureText: true,
       decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        hintText: hintText,
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }

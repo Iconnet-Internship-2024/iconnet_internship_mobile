@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:iconnet_internship_mobile/utils/colors.dart'; // Import your color utilities
-import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_education.dart';
-import 'package:iconnet_internship_mobile/screen/component/navbar.dart'; // Import the navigation bar
+import 'package:iconnet_internship_mobile/utils/colors.dart'; 
+// import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_education.dart';
+import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_applicant/magang_details_applicant.dart';
+import 'package:iconnet_internship_mobile/screen/component/navbar.dart'; 
 import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart'; 
 import 'package:iconnet_internship_mobile/screen/SK_page.dart'; 
 import 'package:iconnet_internship_mobile/screen/profile_page.dart'; 
@@ -23,9 +24,7 @@ class _MagangFormSubmissionState extends State<MagangFormSubmission> {
   DateTime? _startDate;
   DateTime? _endDate;
   PlatformFile? _suratPengantar;
-  PlatformFile? _transkripNilai;
   PlatformFile? _proposal;
-  PlatformFile? _foto;
 
   final _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -262,24 +261,6 @@ class _MagangFormSubmissionState extends State<MagangFormSubmission> {
               TextFormField(
                 readOnly: true,
                 decoration: InputDecoration(
-                  labelText: 'Transkrip Nilai (PDF)',
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: primaryColors, width: 2),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.attach_file, color: Colors.black),
-                    onPressed: () => _pickFile(false, (file) => _transkripNilai = file),
-                  ),
-                ),
-                controller: TextEditingController(
-                  text: _transkripNilai == null ? '' : _transkripNilai!.name,
-                ),
-                cursorColor: primaryColors,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                readOnly: true,
-                decoration: InputDecoration(
                   labelText: 'Proposal (PDF, optional)',
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: primaryColors, width: 2),
@@ -295,31 +276,13 @@ class _MagangFormSubmissionState extends State<MagangFormSubmission> {
                 cursorColor: primaryColors,
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Foto (JPG/JPEG)',
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: primaryColors, width: 2),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.attach_file, color: Colors.black),
-                    onPressed: () => _pickFile(true, (file) => _foto = file),
-                  ),
-                ),
-                controller: TextEditingController(
-                  text: _foto == null ? '' : _foto!.name,
-                ),
-                cursorColor: primaryColors,
-              ),
-              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => MagangFormEducation()),
+                        MaterialPageRoute(builder: (context) => ApplicantDetailsScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(

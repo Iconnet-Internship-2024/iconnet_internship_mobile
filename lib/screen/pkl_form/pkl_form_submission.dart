@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:iconnet_internship_mobile/utils/colors.dart';
-import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_education.dart';
+import 'package:iconnet_internship_mobile/utils/colors.dart'; 
+import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_applicant/pkl_details_applicant.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart'; 
-import 'package:iconnet_internship_mobile/screen/pelajar_dashboard.dart'; 
+import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart'; 
 import 'package:iconnet_internship_mobile/screen/SK_page.dart'; 
 import 'package:iconnet_internship_mobile/screen/profile_page.dart'; 
 
@@ -13,24 +13,22 @@ enum Divisi {
   teknisi,
 }
 
-class PklFormSubmission extends StatefulWidget {
+class MagangFormSubmission extends StatefulWidget {
   @override
-  _PklFormSubmissionState createState() => _PklFormSubmissionState();
+  _MagangFormSubmissionState createState() => _MagangFormSubmissionState();
 }
 
-class _PklFormSubmissionState extends State<PklFormSubmission> {
+class _MagangFormSubmissionState extends State<MagangFormSubmission> {
   Divisi? _selectedDivisi;
   DateTime? _startDate;
   DateTime? _endDate;
   PlatformFile? _suratPengantar;
-  PlatformFile? _transkripNilai;
   PlatformFile? _proposal;
-  PlatformFile? _foto;
 
   final _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  int _selectedIndex = 0;
+  int _selectedIndex = 0; // Default selected index
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
@@ -42,7 +40,7 @@ class _PklFormSubmissionState extends State<PklFormSubmission> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: ColorScheme.light(
-              primary: primaryColors, 
+              primary: primaryColors, // Use primary color
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -83,7 +81,7 @@ class _PklFormSubmissionState extends State<PklFormSubmission> {
         builder: (context) {
           return AlertDialog(
             backgroundColor: Colors.white,
-            title: Text('Konfirmasi',
+            title: Text('Konfirmasi', 
             style:TextStyle(color: Colors.black)),
             content: Text('Anda yakin mau mengirimkan formulir ini? Data tidak dapat diubah setelah pengiriman.',
             style:TextStyle(color: Colors.black)),
@@ -119,7 +117,7 @@ class _PklFormSubmissionState extends State<PklFormSubmission> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PelajarDashboard()),
+          MaterialPageRoute(builder: (context) => MahasiswaDashboard()),
         );
         break;
       case 1:
@@ -262,24 +260,6 @@ class _PklFormSubmissionState extends State<PklFormSubmission> {
               TextFormField(
                 readOnly: true,
                 decoration: InputDecoration(
-                  labelText: 'Transkrip Nilai (PDF)',
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: primaryColors, width: 2),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.attach_file, color: Colors.black),
-                    onPressed: () => _pickFile(false, (file) => _transkripNilai = file),
-                  ),
-                ),
-                controller: TextEditingController(
-                  text: _transkripNilai == null ? '' : _transkripNilai!.name,
-                ),
-                cursorColor: primaryColors,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                readOnly: true,
-                decoration: InputDecoration(
                   labelText: 'Proposal (PDF, optional)',
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: primaryColors, width: 2),
@@ -295,31 +275,13 @@ class _PklFormSubmissionState extends State<PklFormSubmission> {
                 cursorColor: primaryColors,
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Foto (JPG/JPEG)',
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: primaryColors, width: 2),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.attach_file, color: Colors.black),
-                    onPressed: () => _pickFile(true, (file) => _foto = file),
-                  ),
-                ),
-                controller: TextEditingController(
-                  text: _foto == null ? '' : _foto!.name,
-                ),
-                cursorColor: primaryColors,
-              ),
-              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => PklFormEducation()),
+                        MaterialPageRoute(builder: (context) => ApplicantDetailsScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(

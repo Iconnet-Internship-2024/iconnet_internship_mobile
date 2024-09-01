@@ -1,52 +1,22 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:iconnet_internship_mobile/models/auth_respone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class AuthService {
-  final String _baseUrl = 'http://10.0.2.2:3000';
+Future<http.Response> getRequest(String url) async {
+  final prefs = await SharedPreferences.getInstance();
+  final cookie = prefs.getString('cookie');
 
-  Future<AuthResponse> login(String identifier, String password) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'identifier': identifier,
-          'password': password,
-        }),
-      );
-
-    if (response.statusCode == 200) {
-      final authResponse = AuthResponse.fromJson(jsonDecode(response.body));
-      return authResponse;
-    } else {
-      final errorResponse = AuthResponse.fromJson(jsonDecode(response.body));
-      throw Exception(errorResponse.message); // Tangani error dengan lebih baik
-    }
-    } catch (e) {
-      print('Exception caught: $e');
-      rethrow;
-    }
-  }
-
-Future<AuthResponse> register(String username, String email, String password, String confirmPass, int roleId) async {
-  final response = await http.post(
-    Uri.parse('$_baseUrl/auth/register'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'username': username,
-      'email': email,
-      'password': password,
-      'confirmPass': confirmPass,
-      'role_id': roleId, 
-    }),
+  final response = await http.get(
+    Uri.parse(url),
+    headers: {
+      'Cookie': cookie ?? '',
+    },
   );
 
-  if (response.statusCode == 200) {
-    return AuthResponse.fromJson(jsonDecode(response.body));
-  } else {
-    final errorResponse = jsonDecode(response.body);
-    throw Exception(errorResponse['message'] ?? 'Failed to register');
+  // Menyimpan cookie dari response header, jika ada
+  final setCookieHeader = response.headers['set-cookie'];
+  if (setCookieHeader != null) {
+    await prefs.setString('cookie', setCookieHeader);
   }
-}
+
+  return response;
 }
