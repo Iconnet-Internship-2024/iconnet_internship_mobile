@@ -3,7 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
-import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart'; 
+import 'package:iconnet_internship_mobile/screen/pelajar_dashboard.dart'; 
 import 'package:iconnet_internship_mobile/screen/SK_page.dart'; 
 import 'package:iconnet_internship_mobile/screen/profile_page.dart'; 
 import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_submission.dart';
@@ -129,8 +129,8 @@ class _ApplicantFormScreenState extends State<ApplicantFormScreen> {
       if (confirm == true) {
         var request = http.MultipartRequest(
           'POST',
-          // Uri.parse('http://localhost:3000/applicant'),
-          Uri.parse('http://10.0.2.2:3000/applicant'),
+          Uri.parse('http://localhost:3000/applicant'),
+          // Uri.parse('http://10.0.2.2:3000/applicant'),
         );
 
         // Set authorization header
@@ -196,7 +196,7 @@ class _ApplicantFormScreenState extends State<ApplicantFormScreen> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MahasiswaDashboard()),
+          MaterialPageRoute(builder: (context) => PelajarDashboard()),
         );
         break;
       case 1:

@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:iconnet_internship_mobile/services/dio_service.dart';
-import 'dart:io';
 
 class ApplicantService {
   final Dio _dio = createDio();

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
+import 'package:iconnet_internship_mobile/services/submission_service.dart';
 import 'package:iconnet_internship_mobile/services/applicant_service.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
-import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_submission.dart';
-import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart'; 
-import 'package:iconnet_internship_mobile/screen/SK_page.dart'; 
-import 'package:iconnet_internship_mobile/screen/profile_page.dart'; 
+import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_submission/magang_details_submission.dart';
+import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_submission/magang_form_submission.dart';
+import 'package:iconnet_internship_mobile/screen/pelajar_dashboard.dart';
+import 'package:iconnet_internship_mobile/screen/SK_page.dart';
+import 'package:iconnet_internship_mobile/screen/profile_page.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,11 +20,14 @@ class ApplicantDetailsScreen extends StatefulWidget {
 
 class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
   final ApplicantService _applicantService = ApplicantService();
+  final SubmissionService _submissionService = SubmissionService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = true;
   bool _isApplicantExists = false;
+  bool _isSubmissionExists = false;
   int _selectedIndex = 0;
 
+  // Applicant details
   DateTime? _birthDate;
   String _name = '';
   String _placeOfBirth = '';
@@ -32,8 +37,7 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
   String _studentId = '';
   String _educationInstitution = '';
   String _educationMajor = '';
-  String _educationFaculty = '';
-  String _educationLevel = ''; // Jenjang pendidikan
+  String _educationDegree = '';
   String? _photoUrl;
   String? _educationTranscriptUrl;
 
@@ -64,12 +68,19 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
             _studentId = applicantData['student_id'] ?? '';
             _educationInstitution = applicantData['education_institution'] ?? '';
             _educationMajor = applicantData['education_major'] ?? '';
-            _educationFaculty = applicantData['education_faculty'] ?? '';
-            _educationLevel = applicantData['education_degree'] ?? ''; 
+            _educationDegree = applicantData['education_degree'] ?? '';
             _photoUrl = applicantData['photoUrl'];
             _educationTranscriptUrl = applicantData['educationTranscriptUrl'];
             _isApplicantExists = true;
           });
+
+          // Check if submission data exists
+          final submissionData = await _submissionService.getSubmissionByUserId(userId);
+          if (submissionData.isNotEmpty) {
+            setState(() {
+              _isSubmissionExists = true;
+            });
+          }
         }
       }
     } catch (e) {
@@ -90,7 +101,7 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MahasiswaDashboard()),
+          MaterialPageRoute(builder: (context) => PelajarDashboard()),
         );
         break;
       case 1:
@@ -161,21 +172,27 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
                   ),
                   const SizedBox(height: 20.0),
                   _buildDetailField(label: 'Nama', value: _name),
+                  const SizedBox(height: 20.0),
                   _buildDetailField(label: 'Tempat Lahir', value: _placeOfBirth),
+                  const SizedBox(height: 20.0),
                   _buildDetailField(
                       label: 'Tanggal Lahir',
                       value: _birthDate != null
                           ? DateFormat('dd-MM-yyyy').format(_birthDate!)
                           : ''),
                   _buildDetailField(label: 'No. Telepon', value: _phoneNumber),
+                  const SizedBox(height: 20.0),
                   _buildDetailField(label: 'Kota', value: _city),
+                  const SizedBox(height: 20.0),
                   _buildDetailField(label: 'Alamat', value: _address),
+                  const SizedBox(height: 20.0),
                   _buildDetailField(label: 'NIM', value: _studentId),
-                  _buildDetailField(label: 'Jenjang Pendidikan', value: _educationLevel),
+                  const SizedBox(height: 20.0),
+                  _buildDetailField(label: 'Jenjang Pendidikan', value: _educationDegree),
+                  const SizedBox(height: 20.0),
                   _buildDetailField(
                       label: 'Institusi Pendidikan', value: _educationInstitution),
                   _buildDetailField(label: 'Jurusan', value: _educationMajor),
-                  _buildDetailField(label: 'Fakultas', value: _educationFaculty),
                   const SizedBox(height: 20.0),
                   _buildImageSection(label: 'Foto', url: _photoUrl),
                   const SizedBox(height: 20.0),
@@ -184,15 +201,25 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
                   Center(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColors,
+                        backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 15.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
                       ),
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => MagangFormSubmission()),
-                        );
+                        if (_isSubmissionExists) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => SubmissionDetailsScreen()),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => SubmissionFormScreen()),
+                          );
+                        }
                       },
                       child: Text('Next'),
                     ),

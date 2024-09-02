@@ -3,8 +3,8 @@ import 'package:iconnet_internship_mobile/services/cookie_service.dart';
 
 Dio createDio() {
   final dio = Dio(BaseOptions(
-    // baseUrl: 'http://localhost:3000',
-    baseUrl: 'http://10.0.2.2:3000',
+    baseUrl: 'http://localhost:3000',
+    // baseUrl: 'http://10.0.2.2:3000',
   ));
 
   final cookieService = CookieService();

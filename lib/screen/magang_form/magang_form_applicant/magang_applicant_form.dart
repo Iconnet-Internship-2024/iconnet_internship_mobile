@@ -128,8 +128,8 @@ class _ApplicantFormScreenState extends State<ApplicantFormScreen> {
       if (confirm == true) {
         var request = http.MultipartRequest(
           'POST',
-          // Uri.parse('http://localhost:3000/applicant'),
-          Uri.parse('http://10.0.2.2:3000/applicant'),
+          Uri.parse('http://localhost:3000/applicant'),
+          // Uri.parse('http://10.0.2.2:3000/applicant'),
         );
 
         // Set authorization header

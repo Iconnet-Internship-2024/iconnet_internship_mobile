@@ -2,53 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/services/submission_service.dart';
-import 'package:iconnet_internship_mobile/services/applicant_service.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
-import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_submission/magang_details_submission.dart';
-import 'package:iconnet_internship_mobile/screen/magang_form/magang_form_submission/magang_form_submission.dart';
-import 'package:iconnet_internship_mobile/screen/mahasiswa_dashboard.dart';
-import 'package:iconnet_internship_mobile/screen/SK_page.dart';
-import 'package:iconnet_internship_mobile/screen/profile_page.dart';
+import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_applicant/pkl_details_applicant.dart';
+import 'package:iconnet_internship_mobile/screen/pelajar_dashboard.dart'; 
+import 'package:iconnet_internship_mobile/screen/SK_page.dart'; 
+import 'package:iconnet_internship_mobile/screen/profile_page.dart'; 
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ApplicantDetailsScreen extends StatefulWidget {
+class SubmissionDetailsScreen extends StatefulWidget {
   @override
-  _ApplicantDetailsScreenState createState() => _ApplicantDetailsScreenState();
+  _SubmissionDetailsScreenState createState() => _SubmissionDetailsScreenState();
 }
 
-class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
-  final ApplicantService _applicantService = ApplicantService();
+class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
   final SubmissionService _submissionService = SubmissionService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = true;
-  bool _isApplicantExists = false;
-  bool _isSubmissionExists = false;
+  bool _isSubmissionExists = true;
   int _selectedIndex = 0;
 
-  // Applicant details
-  DateTime? _birthDate;
-  String _name = '';
-  String _placeOfBirth = '';
-  String _phoneNumber = '';
-  String _city = '';
-  String _address = '';
-  String _studentId = '';
-  String _educationInstitution = '';
-  String _educationMajor = '';
-  String _educationFaculty = '';
-  String _educationDegree = '';
-  String? _photoUrl;
-  String? _educationTranscriptUrl;
+  String? _jobDivision;
+  DateTime? _startDate;
+  DateTime? _endDate;
+  String? _coverLetterUrl;
+  String? _proposalUrl;
 
   @override
   void initState() {
     super.initState();
-    _checkApplicantData();
+    _checkSubmissionData();
   }
 
-  Future<void> _checkApplicantData() async {
+  Future<void> _checkSubmissionData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('authToken');
@@ -56,33 +43,17 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
         int userId = decodedToken['userId'];
 
-        final applicantData = await _applicantService.getApplicantByUserId(userId);
+        final submissionData = await _submissionService.getSubmissionByUserId(userId);
 
-        if (applicantData.isNotEmpty) {
+        if (submissionData.isNotEmpty) {
           setState(() {
-            _name = applicantData['name'] ?? '';
-            _placeOfBirth = applicantData['place_of_birth'] ?? '';
-            _birthDate = DateTime.tryParse(applicantData['date_of_birth'] ?? '');
-            _phoneNumber = applicantData['phone_number'] ?? '';
-            _city = applicantData['city'] ?? '';
-            _address = applicantData['address'] ?? '';
-            _studentId = applicantData['student_id'] ?? '';
-            _educationInstitution = applicantData['education_institution'] ?? '';
-            _educationMajor = applicantData['education_major'] ?? '';
-            _educationFaculty = applicantData['education_faculty'] ?? '';
-            _educationDegree = applicantData['education_degree'] ?? '';
-            _photoUrl = applicantData['photoUrl'];
-            _educationTranscriptUrl = applicantData['educationTranscriptUrl'];
-            _isApplicantExists = true;
+            _jobDivision = _getJobDivisionName(submissionData['job_division_id']);
+            _startDate = DateTime.tryParse(submissionData['start_date'] ?? '');
+            _endDate = DateTime.tryParse(submissionData['end_date'] ?? '');
+            _coverLetterUrl = submissionData['coverLetterUrl'];
+            _proposalUrl = submissionData['proposalUrl'];
+            _isSubmissionExists = true;
           });
-
-          // Check if submission data exists
-          final submissionData = await _submissionService.getSubmissionByUserId(userId);
-          if (submissionData.isNotEmpty) {
-            setState(() {
-              _isSubmissionExists = true;
-            });
-          }
         }
       }
     } catch (e) {
@@ -91,6 +62,23 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  String _getJobDivisionName(int jobDivisionId) {
+    switch (jobDivisionId) {
+      case 1:
+        return 'Default';
+      case 2:
+        return 'Engineering';
+      case 3:
+        return 'Marketing';
+      case 4:
+        return 'Human Resources';
+      case 5:
+        return 'Sales';
+      default:
+        return 'Unknown Division';
     }
   }
 
@@ -103,7 +91,7 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MahasiswaDashboard()),
+          MaterialPageRoute(builder: (context) => PelajarDashboard()),
         );
         break;
       case 1:
@@ -163,7 +151,7 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
                 children: [
                   Center(
                     child: Text(
-                      'Detail Data Pelamar',
+                      'Detail Data Ajuan',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: primaryColors,
@@ -173,61 +161,41 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
                     ),
                   ),
                   const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'Nama', value: _name),
-                  const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'Tempat Lahir', value: _placeOfBirth),
+                  _buildDetailField(label: 'Divisi', value: _jobDivision ?? ''),
                   const SizedBox(height: 20.0),
                   _buildDetailField(
-                      label: 'Tanggal Lahir',
-                      value: _birthDate != null
-                          ? DateFormat('dd-MM-yyyy').format(_birthDate!)
+                      label: 'Tanggal Mulai',
+                      value: _startDate != null
+                          ? DateFormat('dd-MM-yyyy').format(_startDate!)
                           : ''),
                   const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'No. Telepon', value: _phoneNumber),
-                  const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'Kota', value: _city),
-                  const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'Alamat', value: _address),
-                  const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'NIM', value: _studentId),
-                  const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'Jenjang Pendidikan', value: _educationDegree),
-                  const SizedBox(height: 20.0),
                   _buildDetailField(
-                      label: 'Institusi Pendidikan', value: _educationInstitution),
+                      label: 'Tanggal Selesai',
+                      value: _endDate != null
+                          ? DateFormat('dd-MM-yyyy').format(_endDate!)
+                          : ''),
                   const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'Jurusan', value: _educationMajor),
+                  _buildImageSection(label: 'Surat Pengantar', url: _coverLetterUrl),
                   const SizedBox(height: 20.0),
-                  _buildDetailField(label: 'Fakultas', value: _educationFaculty),
-                  const SizedBox(height: 20.0),
-                  _buildImageSection(label: 'Foto', url: _photoUrl),
-                  const SizedBox(height: 20.0),
-                  _buildImageSection(label: 'Transkrip Pendidikan', url: _educationTranscriptUrl),
+                  _buildImageSection(label: 'Proposal', url: _proposalUrl),
                   const SizedBox(height: 30.0),
                   Center(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.grey,
+                        foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 15.0),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
                       onPressed: () {
-                        if (_isSubmissionExists) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => SubmissionDetailsScreen()),
-                          );
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => SubmissionFormScreen()),
-                          );
-                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ApplicantDetailsScreen()),
+                        );
                       },
-                      child: Text('Next'),
+                      child: Text('Kembali'),
                     ),
                   ),
                 ],
