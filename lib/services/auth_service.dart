@@ -221,4 +221,37 @@ class AuthService {
       print('Error updating password: $e');
     }
   }
+
+  Future<Map<String, dynamic>> getSubmissionByUserId(int userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('authToken');
+
+      if (token == null) {
+        throw Exception('Token not found');
+      }
+
+      final response = await _dio.get(
+        '/submission/user/$userId',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        return {
+          ...data,
+          'status': data['status'],
+        };
+      } else {
+        throw Exception('Failed to load submission data');
+      }
+    } catch (e) {
+      print('Exception caught: $e');
+      rethrow;
+    }
+  }
 }

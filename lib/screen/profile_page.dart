@@ -25,6 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final AuthService _authService = AuthService();
   String _username = '';
   String _email = '';
+  String? _status;
   String? _photoUrl;
   bool _isLoading = true;
 
@@ -33,7 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _fetchUserData();
   }
-
+  
   Future<void> _fetchUserData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -49,10 +50,20 @@ class _ProfilePageState extends State<ProfilePage> {
           photoUrl = applicantData['photoUrl'];
         } catch (e) {
           if (e is DioError && e.response?.statusCode == 404) {
-            // Jika data applicant tidak ditemukan, foto profil di-set null
             photoUrl = null;
           } else {
-            // Jika error lain, lempar ulang errornya
+            throw e;
+          }
+        }
+
+        String? status;
+        try {
+          final submissionData = await _authService.getSubmissionByUserId(userId);
+          status = submissionData['status'];
+        } catch (e) {
+          if (e is DioError && e.response?.statusCode == 404) {
+            status = null;
+          } else {
             throw e;
           }
         }
@@ -60,6 +71,7 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           _username = userData['username'];
           _email = userData['email'];
+          _status = status;
           _photoUrl = photoUrl;
           _isLoading = false;
         });
@@ -67,7 +79,6 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       print('Failed to fetch user data: $e');
       if (e is DioError && e.response?.statusCode == 401) {
-        // Handle unauthorized error by redirecting to login page
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => LoginPage()),
@@ -196,10 +207,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     const SizedBox(height: 20),
                     _buildStatusOption(
-                      context,
-                      icon: Icons.notifications,
-                      status: 'Menunggu Diproses',
-                    ),
+                    context,
+                    icon: Icons.notifications,
+                    status: _status,
+                  ),
                     _buildProfileOption(
                       context,
                       icon: Icons.edit,
@@ -263,8 +274,34 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildStatusOption(BuildContext context,
-      {required IconData icon, required String status}) {
+    Widget _buildStatusOption(BuildContext context,
+      {required IconData icon, required String? status}) {
+    Color statusColor;
+    String statusText;
+
+    switch (status) {
+      case 'pending':
+        statusColor = Colors.orange; // Customize this color as needed
+        statusText = 'Pending: Menunggu diproses';
+        break;
+      case 'in_process':
+        statusColor = Colors.blue; // Customize this color as needed
+        statusText = 'In Process: Lagi diproses';
+        break;
+      case 'accepted':
+        statusColor = Colors.green; // Customize this color as needed
+        statusText = 'Accepted';
+        break;
+      case 'rejected':
+        statusColor = Colors.red; // Customize this color as needed
+        statusText = 'Rejected';
+        break;
+      default:
+        statusColor = Colors.black; // Default color for unknown status
+        statusText = 'Form belum diisi dengan lengkap';
+        break;
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
       padding: const EdgeInsets.all(12),
@@ -274,9 +311,12 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Row(
         children: [
-          Icon(icon, color: primaryColors),
+          Icon(icon, color: statusColor),
           const SizedBox(width: 16),
-          Text(status, style: const TextStyle(fontSize: 16)),
+          Text(
+            statusText,
+            style: TextStyle(fontSize: 16, color: statusColor),
+          ),
         ],
       ),
     );

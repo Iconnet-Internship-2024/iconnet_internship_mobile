@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart';
-import 'package:iconnet_internship_mobile/screen/auth/passwords/reset_password_form_page.dart';
+// import 'package:iconnet_internship_mobile/screen/auth/passwords/reset_password_form_page.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginPage extends StatelessWidget {
@@ -72,25 +72,25 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ResetPasswordFormPage(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "Forgot Password?",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                        decorationColor: Colors.blue,
-                      ),
-                    ),
-                  ),
+                  // const SizedBox(height: 10),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => ResetPasswordFormPage(),
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: const Text(
+                  //     "Forgot Password?",
+                  //     style: TextStyle(
+                  //       color: Colors.blue,
+                  //       decoration: TextDecoration.underline,
+                  //       decorationColor: Colors.blue,
+                  //     ),
+                  //   ),
+                  // ),
                   const SizedBox(height: 100),
                 ],
               ),
