@@ -121,12 +121,25 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
     }
   }
 
-  Future<void> _launchUrl(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
+   void _launchUrl(String url) async {
+    print('Trying to launch: $url'); 
+    final Uri uri = Uri.parse(url);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        print('Cannot launch URL: $url');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tidak dapat membuka URL: $url')),
+        );
+      }
+    } catch (e) {
+      print('Error launching URL: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tidak dapat membuka URL')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }

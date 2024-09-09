@@ -9,6 +9,7 @@ import 'package:iconnet_internship_mobile/screen/SK_page.dart';
 import 'package:iconnet_internship_mobile/screen/profile_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'dart:io';
 import 'dart:convert';
 
 class SubmissionFormScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class SubmissionFormScreen extends StatefulWidget {
 
 class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _submitted = false; 
   final _formKey = GlobalKey<FormState>();
   int _selectedIndex = 0;
   int? _selectedJobDivisionId;
@@ -96,6 +98,10 @@ class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
   }
   
   Future<void> _submitForm() async {
+    setState(() {
+      _submitted = true; // Mark the form as submitted
+    });
+    
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
 
@@ -145,25 +151,38 @@ class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
         var request = http.MultipartRequest(
           'POST',
           Uri.parse('http://localhost:3000/submission/add/im'),
+          // Uri.parse('http://10.0.2.2:3000/submission/add/im'),
         );
 
         request.headers['Authorization'] = 'Bearer $token';
 
         // Add files to the request
         if (_coverLetter != null) {
-          request.files.add(http.MultipartFile.fromBytes(
-            'cover_letter',
-            _coverLetter!.bytes!,
-            filename: _coverLetter!.name,
-          ));
+          try {
+            final coverLetterBytes = _coverLetter!.bytes ?? await File(_coverLetter!.path!).readAsBytes();
+            print('Cover letter bytes: ${coverLetterBytes.length} bytes');
+            request.files.add(http.MultipartFile.fromBytes(
+              'cover_letter',  // This is the correct field name
+              coverLetterBytes,
+              filename: _coverLetter!.name ?? 'default_cover_letter.pdf',
+            ));
+          } catch (e) {
+            print('Error reading cover letter file: $e');
+          }
         }
 
         if (_proposal != null) {
-          request.files.add(http.MultipartFile.fromBytes(
-            'proposal',
-            _proposal!.bytes!,
-            filename: _proposal!.name,
-          ));
+          try {
+            final proposalBytes = _proposal!.bytes ?? await File(_proposal!.path!).readAsBytes();
+            print('Proposal bytes: ${proposalBytes.length} bytes');
+            request.files.add(http.MultipartFile.fromBytes(
+              'proposal',  // This is the correct field name
+              proposalBytes,
+              filename: _proposal!.name ?? 'default_proposal.pdf',
+            ));
+          } catch (e) {
+            print('Error reading proposal file: $e');
+          }
         }
 
         // Add form fields to the request
@@ -176,7 +195,7 @@ class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
         print('Request files: ${request.files}');
 
         var response = await request.send();
-        if (response.statusCode == 200) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
           // Show success notification
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Berhasil Submit: ${response.reasonPhrase}')),
@@ -223,7 +242,7 @@ class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.white,
@@ -249,33 +268,49 @@ class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
+          autovalidateMode: _submitted 
+              ? AutovalidateMode.onUserInteraction 
+              : AutovalidateMode.disabled,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDropdownField(
+              // Dropdown Field
+              _buildDropdownField<int>(
                 'Divisi',
-                'Divisi harus dipilih',
                 _jobDivisions.map((division) {
                   return DropdownMenuItem<int>(
                     value: division['id'],
                     child: Text(division['name']),
                   );
                 }).toList(),
-                (int? newValue) {
+                (newValue) {
                   setState(() {
                     _selectedJobDivisionId = newValue;
                   });
                 },
               ),
+              if (_submitted && _selectedJobDivisionId == null)
+                _buildErrorText('Divisi harus dipilih'),
               const SizedBox(height: 20),
+
+              // Tanggal Mulai (Start Date)
               _buildDateField('Tanggal Mulai', _startDate, () => _selectDate(context, true)),
+              if (_submitted && _startDate == null) _buildErrorText('Tanggal mulai harus dipilih'),
               const SizedBox(height: 20),
+
+              // Tanggal Akhir (End Date)
               _buildDateField('Tanggal Akhir', _endDate, () => _selectDate(context, false)),
+              if (_submitted && _endDate == null) _buildErrorText('Tanggal akhir harus dipilih'),
               const SizedBox(height: 20),
-              _buildFilePicker('Surat Pengantar', _coverLetter, () => _pickFile(true)),
+
+              _buildFilePicker('Surat Pengantar', _coverLetter, () => _pickFile(true), _submitted && _coverLetter == null),
+              if (_submitted && _coverLetter == null) _buildErrorText('Surat pengantar harus diunggah'),
               const SizedBox(height: 20),
-              _buildFilePicker('Proposal (Opsional)', _proposal, () => _pickFile(false)),
+
+              // Proposal (Optional)
+              _buildFilePicker('Proposal (Opsional)', _proposal, () => _pickFile(false), false),
               const SizedBox(height: 20),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center, 
                 children: [
@@ -299,6 +334,13 @@ class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildErrorText(String message) {
+    return Text(
+      message,
+      style: TextStyle(color: Colors.red, fontSize: 12),
     );
   }
 
@@ -326,33 +368,48 @@ class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
     );
   }
 
-  Widget _buildFilePicker(String label, PlatformFile? file, VoidCallback onPickFile) {
+  Widget _buildFilePicker(String label, PlatformFile? file, VoidCallback onTap, bool showError) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         SizedBox(height: 8),
-        InkWell(
-          onTap: onPickFile,
-          child: InputDecorator(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              suffixIcon: Icon(Icons.attach_file),
-              contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(5),
             ),
-            child: Text(
-              file != null ? file.name : 'Belum ada file yang dipilih',
-              style: TextStyle(fontSize: 16),
+            child: Row(
+              children: [
+                Icon(
+                  file != null ? Icons.attach_file : Icons.upload_file,
+                  color: Colors.black87,
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    file != null ? file.name : 'Pilih File',
+                    style: TextStyle(color: Colors.black87, fontSize: 16),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
+        if (showError)
+          Text(
+            'File harus diupload',
+            style: TextStyle(color: Colors.red, fontSize: 12),
+          ),
       ],
     );
   }
 
   Widget _buildDropdownField<T>(
     String label,
-    String validationMessage,
     List<DropdownMenuItem<T>> items,
     Function(T?) onChanged,
   ) {
@@ -370,7 +427,6 @@ class _SubmissionFormScreenState extends State<SubmissionFormScreen> {
             ),
             contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           ),
-          validator: (value) => value == null ? validationMessage : null,
           items: items,
           onChanged: onChanged,
           style: TextStyle(color: Colors.black87, fontSize: 16),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1072712681924",
+    "project_id": "iconnet-projct",
+    "storage_bucket": "iconnet-projct.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1072712681924:android:796736827cc11b7538bc91",
+        "android_client_info": {
+          "package_name": "com.iconnet.internshipmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUIF9ELQdEn8Y4sSzUpigivBKx9Xt93Rk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

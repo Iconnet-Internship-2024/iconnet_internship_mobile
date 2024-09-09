@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/services/auth_service.dart';
-// import 'package:iconnet_internship_mobile/models/auth_respone.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -10,6 +9,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _formKey = GlobalKey<FormState>();
   String _selectedRole = 'siswa';
   bool _isLoading = false;
 
@@ -25,48 +25,50 @@ class _RegisterPageState extends State<RegisterPage> {
       case 'mahasiswa':
         return 2;
       default:
-        return 1; // atau handle error sesuai kebutuhan
+        return 1;
     }
   }
 
   void _register() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final authService = AuthService();
-    try {
-      await authService.register(
-        _usernameController.text,
-        _emailController.text,
-        _passwordController.text,
-        _confirmPasswordController.text,
-        _getRoleId(_selectedRole),  // Kirim role ID ke backend
-      );
+    if (_formKey.currentState!.validate()) {
+      if (_passwordController.text != _confirmPasswordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Passwords do not match')),
+        );
+        return;
+      }
 
       setState(() {
-        _isLoading = false;
+        _isLoading = true;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration successful')),
-      );
+      final authService = AuthService();
+      try {
+        await authService.register(
+          _usernameController.text,
+          _emailController.text,
+          _passwordController.text,
+          _confirmPasswordController.text,
+          _getRoleId(_selectedRole),
+        );
 
-      Navigator.pop(context);
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: $e')),
-      );
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration successful')),
+        );
+
+        Navigator.pop(context);
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registration failed: $e')),
+        );
+      }
     }
   }
 
@@ -76,50 +78,53 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(30.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const SizedBox(height: 50),
-            const LogoAndText(),
-            const SizedBox(height: 20),
-            _buildInputField("Username", _usernameController),
-            const SizedBox(height: 20),
-            _buildInputField("Email", _emailController),
-            const SizedBox(height: 20),
-            _buildRoleDropdown(),
-            const SizedBox(height: 20),
-            _buildPasswordField("Password", _passwordController),
-            const SizedBox(height: 20),
-            _buildPasswordField("Confirm Password", _confirmPasswordController),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const SizedBox(height: 50),
+              const LogoAndText(),
+              const SizedBox(height: 20),
+              _buildInputField("Username", _usernameController),
+              const SizedBox(height: 20),
+              _buildInputField("Email", _emailController),
+              const SizedBox(height: 20),
+              _buildRoleDropdown(),
+              const SizedBox(height: 20),
+              _buildPasswordField("Password", _passwordController),
+              const SizedBox(height: 20),
+              _buildPasswordField("Confirm Password", _confirmPasswordController),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  minimumSize: Size(double.infinity, 50),
                 ),
-                minimumSize: Size(double.infinity, 50),
-              ),
-              onPressed: _isLoading ? null : _register,
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text(
-                      "Register",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white,
+                onPressed: _isLoading ? null : _register,
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text(
+                        "Register",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildInputField(String hint, TextEditingController controller) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
@@ -127,11 +132,17 @@ class _RegisterPageState extends State<RegisterPage> {
           borderRadius: BorderRadius.circular(10),
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '$hint harus diisi!';
+        }
+        return null;
+      },
     );
   }
 
   Widget _buildPasswordField(String hint, TextEditingController controller) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: true,
       decoration: InputDecoration(
@@ -140,6 +151,12 @@ class _RegisterPageState extends State<RegisterPage> {
           borderRadius: BorderRadius.circular(10),
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '$hint harus diisi!';
+        }
+        return null;
+      },
     );
   }
 
@@ -147,6 +164,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return DropdownButtonFormField<String>(
       value: _selectedRole,
       decoration: InputDecoration(
+        fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -162,6 +180,8 @@ class _RegisterPageState extends State<RegisterPage> {
           _selectedRole = newValue!;
         });
       },
+      dropdownColor: Colors.white,
+      style: TextStyle(color: Colors.black),
     );
   }
 }

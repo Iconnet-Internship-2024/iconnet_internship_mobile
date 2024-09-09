@@ -27,6 +27,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   bool _isCurrentPasswordVisible = false;
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _submitted = false;
   int _selectedIndex = 2;
 
   @override
@@ -43,7 +44,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
         int userId = decodedToken['userId'];
         final userData = await _authService.getUserById(userId);
-        // final applicantData = await _authService.getApplicantByUserId(userId);
                 
         String? photoUrl;
         try {
@@ -51,10 +51,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           photoUrl = applicantData['photoUrl'];
         } catch (e) {
           if (e is DioError && e.response?.statusCode == 404) {
-            // Jika data applicant tidak ditemukan, foto profil di-set null
             photoUrl = null;
           } else {
-            // Jika error lain, lempar ulang errornya
             throw e;
           }
         }
@@ -90,11 +88,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   }
 
   void _updatePassword() async {
+    setState(() {
+      _submitted = true; // Mark the form as submitted
+    });
+
     final oldPassword = _currentPasswordController.text;
     final newPassword = _newPasswordController.text;
     final confirmNewPass = _confirmPasswordController.text;
 
-    if (newPassword.isEmpty || confirmNewPass.isEmpty || oldPassword.isEmpty) {
+    if (oldPassword.isEmpty || newPassword.isEmpty || confirmNewPass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Semua field harus diisi')),
       );
@@ -228,20 +230,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             ),
                           ),
                           _buildPasswordField(
-                            hint: 'masukkan password saat ini',
+                            hint: 'Masukkan password saat ini',
                             controller: _currentPasswordController,
                             isObscured: !_isCurrentPasswordVisible,
                             onVisibilityToggle: () => _togglePasswordVisibility(_currentPasswordController),
+                            errorText: _submitted && _currentPasswordController.text.isEmpty ? 'Password saat ini harus diisi' : null,
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                          const SizedBox(height: 20),
                           const Text(
                             'Password Baru',
                             style: TextStyle(
@@ -250,20 +245,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             ),
                           ),
                           _buildPasswordField(
-                            hint: 'masukkan password baru',
+                            hint: 'Masukkan password baru',
                             controller: _newPasswordController,
                             isObscured: !_isNewPasswordVisible,
                             onVisibilityToggle: () => _togglePasswordVisibility(_newPasswordController),
+                            errorText: _submitted && _newPasswordController.text.isEmpty ? 'Password baru harus diisi' : null,
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                          const SizedBox(height: 20),
                           const Text(
                             'Ulangi Password Baru',
                             style: TextStyle(
@@ -272,31 +260,34 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             ),
                           ),
                           _buildPasswordField(
-                            hint: 'ulangi password baru',
+                            hint: 'Ulangi password baru',
                             controller: _confirmPasswordController,
                             isObscured: !_isConfirmPasswordVisible,
                             onVisibilityToggle: () => _togglePasswordVisibility(_confirmPasswordController),
+                            errorText: _submitted && _confirmPasswordController.text.isEmpty ? 'Ulangi password harus diisi' : null,
+                          ),
+                          const SizedBox(height: 30),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Center(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: _updatePassword,
+                                child: const Text(
+                                  'Ubah Password',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: _updatePassword,
-                        child: const Text(
-                          'Ubah Password',
-                          style: TextStyle(fontSize: 16),
-                        ),
                       ),
                     ),
                   ],
@@ -315,23 +306,31 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     required TextEditingController controller,
     required bool isObscured,
     required VoidCallback onVisibilityToggle,
+    String? errorText,
   }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isObscured,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-        border: const OutlineInputBorder(),
-        suffixIcon: IconButton(
-          icon: Icon(
-            isObscured ? Icons.visibility_off : Icons.visibility,
-            color: Colors.black,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: controller,
+          obscureText: isObscured,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+            border: const OutlineInputBorder(),
+            suffixIcon: IconButton(
+              icon: Icon(
+                isObscured ? Icons.visibility_off : Icons.visibility,
+                color: Colors.black,
+              ),
+              onPressed: onVisibilityToggle,
+            ),
+            errorText: errorText,
           ),
-          onPressed: onVisibilityToggle,
+          style: const TextStyle(color: Colors.black),
         ),
-      ),
-      style: const TextStyle(color: Colors.black),
+        const SizedBox(height: 10),
+      ],
     );
   }
 }

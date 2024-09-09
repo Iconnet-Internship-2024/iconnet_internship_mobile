@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iconnet_internship_mobile/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:iconnet_internship_mobile/screen/auth/register_screen.dart';
-// import 'package:iconnet_internship_mobile/screen/auth/passwords/reset_password_form_page.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginPage extends StatelessWidget {
@@ -72,25 +71,6 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // const SizedBox(height: 10),
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (context) => ResetPasswordFormPage(),
-                  //       ),
-                  //     );
-                  //   },
-                  //   child: const Text(
-                  //     "Forgot Password?",
-                  //     style: TextStyle(
-                  //       color: Colors.blue,
-                  //       decoration: TextDecoration.underline,
-                  //       decorationColor: Colors.blue,
-                  //     ),
-                  //   ),
-                  // ),
                   const SizedBox(height: 100),
                 ],
               ),
@@ -113,24 +93,48 @@ class _InputWrapperState extends State<InputWrapper> {
   final TextEditingController _identifierController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  String? _identifierError;
+  String? _passwordError;
 
   void _login() async {
+    setState(() {
+      _identifierError = null;
+      _passwordError = null;
+    });
+
+    final identifier = _identifierController.text;
+    final password = _passwordController.text;
+
+    if (identifier.isEmpty) {
+      setState(() {
+        _identifierError = 'Email atau Username harus diisi!';
+      });
+    }
+
+    if (password.isEmpty) {
+      setState(() {
+        _passwordError = 'Password harus diisi!';
+      });
+    }
+
+    // If there are any errors, stop further processing
+    if (_identifierError != null || _passwordError != null) {
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     final authService = AuthService();
     try {
-      final authResponse = await authService.login(
-        _identifierController.text,
-        _passwordController.text,
-      );
+      final authResponse = await authService.login(identifier, password);
 
       if (authResponse.isSuccess) {
         final prefs = await SharedPreferences.getInstance();
         String token = authResponse.token;
 
-        // Simpan token
+        // Save token
         await prefs.setString('authToken', token);
 
         print('Token saved: $token');
@@ -140,10 +144,10 @@ class _InputWrapperState extends State<InputWrapper> {
 
         print('Decoded token: $decodedToken');
 
-        // Simpan roleId
+        // Save roleId
         await prefs.setInt('roleId', roleId);
 
-        // Redirect berdasarkan roleId
+        // Redirect based on roleId
         if (roleId == 2) {
           Navigator.pushReplacementNamed(context, '/mahasiswa_dashboard');
         } else if (roleId == 1) {
@@ -152,10 +156,10 @@ class _InputWrapperState extends State<InputWrapper> {
           _showDialog('Error', 'Unknown role ID: $roleId');
         }
       } else {
-        _showDialog('Login Failed', authResponse.message);
+        _showDialog('Login Gagal', authResponse.message);
       }
     } catch (e) {
-      _showDialog('Error', 'Login failed. Please check your credentials.');
+      _showDialog('Error', 'Email, Username, atau Password Salah!. Tolong Masukkan dengan Benar!.');
     } finally {
       setState(() {
         _isLoading = false;
@@ -190,9 +194,9 @@ class _InputWrapperState extends State<InputWrapper> {
       child: Column(
         children: <Widget>[
           const SizedBox(height: 80),
-          _buildInputField("Username or Email", _identifierController),
+          _buildInputField("Username atau Email", _identifierController, _identifierError),
           const SizedBox(height: 20),
-          _buildPasswordField("Password", _passwordController),
+          _buildPasswordField("Password", _passwordController, _passwordError),
           const SizedBox(height: 20),
           Container(
             width: 150,
@@ -223,7 +227,7 @@ class _InputWrapperState extends State<InputWrapper> {
     );
   }
 
-  Widget _buildInputField(String label, TextEditingController controller) {
+  Widget _buildInputField(String label, TextEditingController controller, String? errorText) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
@@ -231,11 +235,12 @@ class _InputWrapperState extends State<InputWrapper> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
+        errorText: errorText,
       ),
     );
   }
 
-  Widget _buildPasswordField(String label, TextEditingController controller) {
+  Widget _buildPasswordField(String label, TextEditingController controller, String? errorText) {
     return TextField(
       controller: controller,
       obscureText: true,
@@ -244,6 +249,7 @@ class _InputWrapperState extends State<InputWrapper> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
+        errorText: errorText,
       ),
     );
   }

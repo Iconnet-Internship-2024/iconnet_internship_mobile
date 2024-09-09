@@ -23,6 +23,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String _email = '';
   String? _photoUrl = '';
   bool _isLoading = true;
+  bool _submitted = false; // Track if the form has been submitted
 
   @override
   void initState() {
@@ -39,7 +40,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         int userId = decodedToken['userId'];
         final userData = await _authService.getUserById(userId);
         // final applicantData = await _authService.getApplicantByUserId(userId);
-        
+
         String? photoUrl;
         try {
           final applicantData = await _authService.getApplicantByUserId(userId);
@@ -57,7 +58,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         setState(() {
           _username = userData['username'];
           _email = userData['email'];
-          _usernameController.text = _username; 
+          _usernameController.text = _username;
           _photoUrl = photoUrl;
           _isLoading = false;
         });
@@ -68,7 +69,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         // Handle unauthorized error by redirecting to login page
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
+          MaterialPageRoute(builder: (context) => const LoginPage()),
         );
       }
     }
@@ -78,6 +79,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final newUsername = _usernameController.text.trim();
 
     if (newUsername.isEmpty) {
+      setState(() {
+        _submitted = true;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Username tidak boleh kosong')),
       );
@@ -139,7 +143,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         body: _isLoading
-            ? Center(child: CircularProgressIndicator()) // Menampilkan loading saat data belum diambil
+            ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Column(
                   children: [
@@ -205,10 +209,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           const SizedBox(height: 5),
                           TextField(
                             controller: _usernameController,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               hintText: 'Ubah username',
-                              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                              border: OutlineInputBorder(),
+                              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                              border: const OutlineInputBorder(),
+                              errorText: _submitted && _usernameController.text.trim().isEmpty
+                                  ? 'Username tidak boleh kosong'
+                                  : null,
                             ),
                           ),
                         ],
@@ -217,19 +224,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     const SizedBox(height: 30),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                      child: Center(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                        ),
-                        onPressed: _updateUsername, // Panggil fungsi update username
-                        child: const Text(
-                          'Edit Profile',
-                          style: TextStyle(fontSize: 16),
+                          onPressed: _updateUsername,
+                          child: const Text(
+                            'Edit Profile',
+                            style: TextStyle(fontSize: 16),
+                          ),
                         ),
                       ),
                     ),

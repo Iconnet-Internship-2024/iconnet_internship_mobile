@@ -4,8 +4,8 @@ import 'package:iconnet_internship_mobile/utils/colors.dart';
 import 'package:iconnet_internship_mobile/services/submission_service.dart';
 import 'package:iconnet_internship_mobile/services/applicant_service.dart';
 import 'package:iconnet_internship_mobile/screen/component/navbar.dart';
-import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_submission/magang_details_submission.dart';
-import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_submission/magang_form_submission.dart';
+import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_submission/pkl_details_submission.dart';
+import 'package:iconnet_internship_mobile/screen/pkl_form/pkl_form_submission/pkl_form_submission.dart';
 import 'package:iconnet_internship_mobile/screen/pelajar_dashboard.dart';
 import 'package:iconnet_internship_mobile/screen/SK_page.dart';
 import 'package:iconnet_internship_mobile/screen/profile_page.dart';
@@ -119,12 +119,25 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
     }
   }
 
-  Future<void> _launchUrl(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
+  void _launchUrl(String url) async {
+    print('Trying to launch: $url'); 
+    final Uri uri = Uri.parse(url);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        print('Cannot launch URL: $url');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tidak dapat membuka URL: $url')),
+        );
+      }
+    } catch (e) {
+      print('Error launching URL: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tidak dapat membuka URL')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
@@ -180,6 +193,7 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
                       value: _birthDate != null
                           ? DateFormat('dd-MM-yyyy').format(_birthDate!)
                           : ''),
+                  const SizedBox(height: 20.0),
                   _buildDetailField(label: 'No. Telepon', value: _phoneNumber),
                   const SizedBox(height: 20.0),
                   _buildDetailField(label: 'Kota', value: _city),
@@ -192,6 +206,7 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
                   const SizedBox(height: 20.0),
                   _buildDetailField(
                       label: 'Institusi Pendidikan', value: _educationInstitution),
+                  const SizedBox(height: 20.0),
                   _buildDetailField(label: 'Jurusan', value: _educationMajor),
                   const SizedBox(height: 20.0),
                   _buildImageSection(label: 'Foto', url: _photoUrl),
@@ -248,7 +263,7 @@ class _ApplicantDetailsScreenState extends State<ApplicantDetailsScreen> {
     return Row(
       children: [
         Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-        if (url != null)
+        if (url != null && url.isNotEmpty)
           GestureDetector(
             onTap: () => _launchUrl(url),
             child: Text(
