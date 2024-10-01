@@ -135,8 +135,9 @@ Future<void> _submitForm() async {
     if (confirm == true) {
       var request = http.MultipartRequest(
         'POST',
-        // Uri.parse('http://10.0.2.2:3000/applicant/add/im'),
-        Uri.parse('http://localhost:3000/applicant/add/im'),
+        Uri.parse('http://10.0.2.2:3000/applicant/add/im'),
+        // Uri.parse('http://localhost:3000/applicant/add/im'),
+        // Uri.parse('http://192.168.1.12:3000/applicant/add/im'),
       );
 
       request.headers['Authorization'] = 'Bearer $token';

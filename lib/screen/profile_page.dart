@@ -281,23 +281,23 @@ class _ProfilePageState extends State<ProfilePage> {
 
     switch (status) {
       case 'pending':
-        statusColor = Colors.orange; // Customize this color as needed
-        statusText = 'Pending: Menunggu diproses';
+        statusColor = Colors.orange; 
+        statusText = 'Menunggu diproses';
         break;
       case 'in_process':
-        statusColor = Colors.blue; // Customize this color as needed
-        statusText = 'In Process: Lagi diproses';
+        statusColor = Colors.blue;
+        statusText = 'Sedang diproses';
         break;
       case 'accepted':
-        statusColor = Colors.green; // Customize this color as needed
-        statusText = 'Accepted';
+        statusColor = Colors.green; 
+        statusText = 'Diterima';
         break;
       case 'rejected':
-        statusColor = Colors.red; // Customize this color as needed
-        statusText = 'Rejected';
+        statusColor = Colors.red;
+        statusText = 'Ditolak';
         break;
       default:
-        statusColor = Colors.black; // Default color for unknown status
+        statusColor = Colors.black;
         statusText = 'Form belum diisi dengan lengkap';
         break;
     }
